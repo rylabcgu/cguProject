@@ -1,0 +1,31 @@
+body {
+	background-color: #F7F7F7;
+}
+
+.my-block {
+	background-color: white;
+	border: 2px solid #F0F0F0;
+}
+
+.my-line-text {
+	border: none;
+	border-bottom: 2px solid #DDDDDD;
+	border-radius: 1%;
+}
+
+.my-line-text:focus {
+	outline-width: 0;
+	border-bottom-color: #5CB85C; 
+}
+
+.my-error-msg {
+	color : red;
+	font-size: 15px;
+}
+
+.errorlist {
+	padding: 0;
+	list-style-type: none;
+	color: red;
+	font-size: 15px; 
+}

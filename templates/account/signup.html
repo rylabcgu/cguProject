@@ -1,0 +1,123 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block content %}
+
+
+
+<div class="row">
+	<div class="col-md-8 offset-md-2">
+		<div class="my-block" style="padding: 50px 16% 50px 16%">
+			<div style="text-align: center;">
+				<p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+			</div>
+			
+			<form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+				{% csrf_token %}
+				<div class="container">
+					<div class="form-group row">
+						<label for="id_username" class="col-sm-3 col-form-label">帳號：</label>
+						<div class="col-sm-9">
+							<input type="text" class="form-control my-line-text" id="id_username" name="username" placeholder="6~20字英文數字組合" maxlength="20">
+						</div>
+					</div>
+					<div class="my-error-msg">{{ form.username.errors }}</div>
+
+					<div class="form-group row">
+						<label for="id_email" class="col-sm-3 col-form-label">Email：</label>
+						<div class="col-sm-9">
+							<input type="email" class="form-control my-line-text" id="id_email" name="email" placeholder="電子郵件">
+						</div>
+					</div>
+					<div class="my-error-msg">{{ form.email.errors }}</div>
+
+					<div class="form-group row">
+						<label for="id_password1" class="col-sm-3 col-form-label">密碼：</label>
+						<div class="col-sm-9">
+							<input type="password" class="form-control my-line-text" id="id_password1" name="password1" placeholder="8個字以上且不能只有數字">
+						</div>
+					</div>
+					<div class="my-error-msg">{{ form.password1.errors }}</div>
+
+					<div class="form-group row">
+						<label for="id_password2" class="col-sm-3 col-form-label">密碼(確認)：</label>
+						<div class="col-sm-9">
+							<input type="password" class="form-control my-line-text" id="id_password2" name="password2" placeholder="密碼確認">
+						</div>
+					</div>
+					<div class="my-error-msg">{{ form.password2.errors }}</div>
+
+				</div>
+				<!--{{ form.as_p }}-->
+				{% if redirect_field_value %}
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+				{% endif %}
+				<div class="form-group row">
+					<div class="col-sm-12">
+						<button type="button" class="btn btn-success btn-block" onclick="signup_submit()">{% trans "Sign Up" %}</button>
+					</div>
+				</div>
+				<div style="text-align: center;">
+					<div class="my-error-msg"></div>
+				</div>
+			</form>
+
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	function signup_submit() {
+		var form = document.getElementsByClassName("signup")[0];
+		var inputs = document.getElementsByClassName("form-control");
+		var error_msgs = document.getElementsByClassName("my-error-msg");
+
+
+		for(var i = 0; i < error_msgs.length; i++) {
+			error_msgs[i].innerHTML = '';
+		}
+
+		for(var i = 1; i < inputs.length; i++) {
+			if(inputs[i].value == '') {
+				error_msgs[4].innerHTML = '請填寫所有欄位!';
+				return;
+			}
+		}
+		console.log(inputs[1].value.length)
+		if(inputs[1].value.length < 6) {
+			error_msgs[4].innerHTML = '帳號長度不符!';
+			return;
+		}
+
+		for(var i = 0; i < inputs[1].value.length; i++) {
+			if(!is_char_valid(inputs[1].value[i])) {
+				error_msgs[4].innerHTML = '帳號含有非法字元!';
+				return;
+			}
+		}
+
+		form.submit();
+	}
+
+	//判斷字元是否是英文或數字
+	function is_char_valid(ch) {
+		var charCode = ch.charCodeAt(0);
+		console.log(ch);
+		if(charCode >= "0".charCodeAt(0) && charCode <= "9".charCodeAt(0))
+			return true;	//是數字
+		else {
+			if(charCode >= "A".charCodeAt(0) && charCode <= "Z".charCodeAt(0))
+				return true;	//是英文大寫
+			else {
+				if(charCode >= "a".charCodeAt(0) && charCode <= "z".charCodeAt(0))
+					return true;	//是英文小寫
+				else
+					return false;	//都不是
+			}
+		}
+	}
+</script>
+{% endblock %}
