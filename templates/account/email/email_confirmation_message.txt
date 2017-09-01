@@ -1,8 +1,13 @@
-{% load account %}{% user_display user as user_display %}{% load i18n %}{% autoescape off %}{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}Hello from {{ site_name }}!
+{% load account %}
+{% user_display user as user_display %}
+{% load i18n %}
 
-You're receiving this e-mail because user {{ user_display }} has given yours as an e-mail address to connect their account.
+{{ user_display }}, 您好：
+{% autoescape off %}
 
-To confirm this is correct, go to {{ activate_url }}
-{% endblocktrans %}{% endautoescape %}
-{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}Thank you from {{ site_name }}!
-{{ site_domain }}{% endblocktrans %}
+請您點擊以下連結以完成電子郵件認證
+{{ activate_url }}
+
+{% endautoescape %}
+感謝您的使用!
+台語Song啦工作團隊

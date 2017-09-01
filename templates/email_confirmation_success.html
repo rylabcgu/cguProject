@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+ 
+{% block head_title %}認證成功{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-md-8 offset-md-2">
+			<div class="my-block" style="padding: 40px 40px 40px 40px; text-align: center;">
+				<h2>認證完成</h2><br>
+				<p>系統將在兩秒鐘後自動跳到登入畫面。</p>
+			</div>
+		</div>
+	</div>
+	
+	<script type="text/javascript">
+		function redirect_to_login() {
+			window.location.href = "/accounts/login";
+		}
+
+		setTimeout(redirect_to_login, 2000);
+	</script>
+{% endblock %}

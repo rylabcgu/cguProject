@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^$', index),
+    url(r'^email_confirmation_success$', email_confirmation_success),
 ]

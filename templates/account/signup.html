@@ -55,10 +55,8 @@
 				{% if redirect_field_value %}
 				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
 				{% endif %}
-				<div class="form-group row">
-					<div class="col-sm-12">
-						<button type="button" class="btn btn-success btn-block" onclick="signup_submit()">{% trans "Sign Up" %}</button>
-					</div>
+				<div>					
+					<button type="button" class="btn-primary btn-block" onclick="signup_submit()">{% trans "Sign Up" %}</button>					
 				</div>
 				<div style="text-align: center;">
 					<div class="my-error-msg"></div>
@@ -72,7 +70,7 @@
 <script type="text/javascript">
 	function signup_submit() {
 		var form = document.getElementsByClassName("signup")[0];
-		var inputs = document.getElementsByClassName("form-control");
+		var inputs = document.getElementsByClassName("my-line-text");
 		var error_msgs = document.getElementsByClassName("my-error-msg");
 
 
@@ -80,20 +78,20 @@
 			error_msgs[i].innerHTML = '';
 		}
 
-		for(var i = 1; i < inputs.length; i++) {
+		for(var i = 0; i < inputs.length; i++) {
 			if(inputs[i].value == '') {
 				error_msgs[4].innerHTML = '請填寫所有欄位!';
 				return;
 			}
 		}
-		console.log(inputs[1].value.length)
-		if(inputs[1].value.length < 6) {
+
+		if(inputs[0].value.length < 6) {
 			error_msgs[4].innerHTML = '帳號長度不符!';
 			return;
 		}
 
-		for(var i = 0; i < inputs[1].value.length; i++) {
-			if(!is_char_valid(inputs[1].value[i])) {
+		for(var i = 0; i < inputs[0].value.length; i++) {
+			if(!is_char_valid(inputs[0].value[i])) {
 				error_msgs[4].innerHTML = '帳號含有非法字元!';
 				return;
 			}

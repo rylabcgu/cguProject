@@ -15,10 +15,11 @@ body {
 
 .my-line-text:focus {
 	outline-width: 0;
-	border-bottom-color: #5CB85C; 
+	border-bottom-color: #0275D8; 
 }
 
 .my-error-msg {
+	margin: 10px 0px 10px 0px;
 	color : red;
 	font-size: 15px;
 }

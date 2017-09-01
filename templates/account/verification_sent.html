@@ -2,11 +2,16 @@
 
 {% load i18n %}
 
-{% block head_title %}{% trans "Verify Your E-mail Address" %}{% endblock %}
+{% block head_title %}註冊完成{% endblock %}
 
 {% block content %}
-    <h1>{% trans "Verify Your E-mail Address" %}</h1>
-
-    <p>{% blocktrans %}We have sent an e-mail to you for verification. Follow the link provided to finalize the signup process. Please contact us if you do not receive it within a few minutes.{% endblocktrans %}</p>
+    <div class="row">
+    	<div class="col-md-8 offset-md-2">
+    		<div class="my-block" style="padding: 40px 40px 40px 40px;">
+    			<h2>註冊完成</h2>
+				<p>我們寄給你一封認證信，請到您註冊的電子郵件確認並點擊連結完成認證。</p>
+    		</div>
+    	</div>
+    </div>
 
 {% endblock %}
