@@ -21,5 +21,12 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^$', index),
-    url(r'^email_confirmation_success$', email_confirmation_success),
+    url(r'^email_confirmation_success/$', email_confirmation_success),
+    url(r'^makeNew/$', makeNew),
+    url(r'^video/(\w+)/$', video),
+    url(r'^follow/(\w+)/(\w+)/$', follow),
+    url(r'^favorite/(\w+)/(\w+)/$', favorite),
+    url(r'^modify/$', modify),
+    url(r'^aftermodify/$',aftermodify),
+    url(r'^autoAL/$', autoAL, name='autoAL'),
 ]

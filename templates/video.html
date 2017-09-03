@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+{% block head_title %} {{ song.singer }} - {{ song.title }} {% endblock %}
+{% block content %}
+<style>
+a:hover{
+	color:red;
+}
+form{
+	display:inline; 
+}
+div#section-comment-information{
+	display:inline;	
+}
+</style>
+
+	<div class="row">
+		<div class="col-md-8">
+			<div id="videoDiv" style="width:100%; background-color: #000000;">
+				<div id="player"></div> <!-- 影片的位置 -->
+				<div id="cuewrap"></div> <!-- 放字幕的地方 -->
+				<!--<b><div id="cue_chinese"></div></b>-->
+				<div>
+					<br><br>
+					<button onclick="playVideo();">播放{{Page_id}}</button>
+					<button onclick="pauseVideo();">暫停</button>
+					<button onclick="replayVideo();">重頭播放</button>	
+					<button id="text_word" onclick="text_present();">字幕</button>
+					<!--<button id="ch" onclick="CH();">拼音</button>-->
+					<span id="timer" style="background-color:black;color:yellow;"></span><br>
+				</div>
+			</div>
+
+			<div class="my-block">
+				<input type="button" id="FavoriteButton" value="{{ isFavorite }}" onclick="favorite()">
+				<p>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></p>
+				{% if modify %}
+					<div id='modify'>
+						<form action="/modify/" method="get">
+						<input type="hidden" name="id" value="{{song_id}}">
+						<input type="submit" value="modify">
+					</form></div>
+				{% endif  %}
+			</div>
+		</div>
+
+		<div class="col-md-4">
+			<div id="lyricsDIv">
+				<div id="content" style="overflow: scroll; height: 550px; background-color: #F8F8FF">
+					<script type="text/javascript">
+						{% for lyric in lyrics %}
+						document.write("<table><tr>");
+						{% load staticfiles %}
+						document.write("<td><img class ='move' id='{{lyric.order}}'' src='{% static 'images/green.png' %}''></td>");
+						document.write("<td><p id='s{{lyric.order}}'>");
+						  var find = '-';
+						　var pinyin = '{{lyric.pinyin}}';
+						  var text = '{{lyric.text}}';
+						　var pinyin_Array = new Array(); //台羅拼音
+						  var text_Array = new Array();   //台語字
+						  var record_Array = new Array(); //紀錄"-"數量 -> 讓台語字能夠依照台羅拼音隔開分布位置 2 1 2
+						  var translate_Array = new Array(); //2 1 2 -> 0 2 3 5陣列表示
+						  var tw_Array = new Array(); //紀錄新的台語字斷詞
+						  translate_Array[0] = 0;
+						  //刪除左右邊的空格以及--問題
+						  pinyin = pinyin.replace( /^\s*/, "");
+						  pinyin = pinyin.replace(/(\s*$)/g, "");
+						  pinyin = pinyin.replace(/--/gi,"-")
+						  //切割台羅拼音
+						　pinyin_Array = pinyin.split(" ");
+						  //刪除台語字的所有空格
+						  text = text.replace(/\s+/g,"");
+						  //切割台語字
+						  text_Array = text.split("");
+						  var words = pinyin_Array.length;
+						  for(var i=0;i<words;i++){
+						  	var reg = new RegExp(find,"g"); //建立了一個正則表達式，計算-數量求出單句自數
+						  	var c = pinyin_Array[i].match(reg); //c即要匹配的字符，其中g表示全局搜索。match則返回匹配的字符（串)
+						  	if(c) record_Array[i] = 1 + c.length;  //寂寞 的 心情 2 1 2
+						  	else record_Array[i] = 1;
+						  }	
+						  for(var i=0;i<words;i++){
+						  	translate_Array[i+1] = translate_Array[i] + record_Array[i];
+						  	var string="";
+						  	for(var j=translate_Array[i];j<translate_Array[i+1];j++){
+						  		string += text_Array[j];
+						  	} 
+						  	tw_Array[i] = string;
+						  	document.write("<ruby style='font-size: 125%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
+						  }	
+						  document.write("</p></td></tr></table>");
+						{% endfor %}
+					</script>
+				</div>
+			</div>
+		</div>>
+	</div>
+
+
+
+
+
+
+	
+
+	<div id='watch-all-comment' style="float:left; margin-left:30px">
+		<div id='submit-my-comment'>
+			<div style='display:inline-block'><h2>留言列表({{this_song_comments | length}})</h2></div>
+			<div align="right" style='display:inline-block'><h3>&emsp;{{song.viewNumber}}次觀看<h3></div>
+			<div align="right">
+			<img class='goodgrade' src='{% static 'images/good.png' %}' width="40px">
+			<span id='good_place'></span>
+			<span>{{this_song_good_ratings | length}}</span>
+			<img class='favorite' src='{% static 'images/subscribe.png' %}' width="60px">
+			<span id='fav_place'></span>
+			<!--<span>{{this_song_fav | length}}</span>-->
+			<!--<img class='badgrade' src='{% static 'images/bad.png' %}' onclick='statistics_bad()' width="20px">-->
+			</div>
+		</div> 
+		<div id='user-comment'>
+			<div class='comment-picture' style="display:inline"> 
+				<img src="{% static 'images/皮卡丘.jpg' %}" style="width:72px">
+			</div>
+			<div class='comment-form-post' style='display:inline'>
+				<form name='form' method='POST'>
+					<textarea id='comment_id' name="comment_id" type="text"  value="留個言吧..." style="color: #AAAAAA;" rows=4 cols=65
+						onfocus="if (this.value == '留個言吧...') {this.value = ''; this.style.color='#333333'}" 
+						onblur="if (this.value == '') {this.value = '留個言吧...'; this.style.color='#AAAAAA'}" >留個言吧...</textarea>
+					<br>
+					<div align='right'>
+						<input type='submit' value='取消'>
+						<input type='submit' value='評論'>
+					</div>
+					<hr>
+				</form>					
+			</div>
+		</div>
+		<div id='section-comment-lists'>
+			{% for i in show_comments %}
+			<section style="border:1px solid gray">
+				<div id='section-comment-item'>
+					<div id='section-comment-picture' style='display:inline-block'>
+						<img src="{% static 'images/皮卡丘.jpg' %}" style="width:72px">
+					</div>
+					<div id='section-comment-information' style='width:300px'>
+						<div id='comment-renderer-content' style='display:inline-block; width:300px'>
+							<div id='comment-renderer-header'>
+								<div style='display:inline-block'>
+									<a>{{i.user | capfirst}}</a> 
+								</div>
+								<div align='right' style='display:inline-block'>
+									{{i.commentTime}}
+								</div>
+							</div>
+							<div id='comment-renderer-text'>
+								<div id='comment-renderer-text-content'>
+									{{i.content}}
+								</div>
+							</div>
+							<div id='comment-renderer-footer'>
+								<p>回覆-按讚</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id='section-watch-comment-reply'>
+					<!--<p>查看全部回覆</p>-->
+				</div>
+			</section>
+			{% endfor %}
+		</div>
+		<h2>{{message}}</h2>
+		<h3>{{orders}}</h3>
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script type="text/javascript">
+	var player;
+	var tag = document.createElement('script');
+	tag.src = "https://www.youtube.com/player_api";
+	var firstScriptTag = document.getElementsByTagName('script')[0];
+	var sentence = "";
+	var switcher_textword = 0;
+	var switcher_ch = 0;
+	var switcher_good = 0;
+	var switcher_bad = 0;
+	var youtube_id = "{{youtube_id}}";	
+	setInterval(getPlayStatus,100);
+	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+	  function onYouTubeIframeAPIReady() {
+		player = new YT.Player('player', {
+		  height: '400',
+		  width: '100%',
+		  videoId: youtube_id,
+		  events: {
+			onReady: onPlayerReady
+		  }
+		});
+	  }
+		function onPlayerReady(){
+			setInterval(getPlayStatus,500); 
+			//document.getElementById("cuewrap").innerHTML = "歡迎來到講台語學習平台!!!";	
+		}
+		function playVideo(){
+			player.playVideo();
+		}
+		function pauseVideo(){
+			player.pauseVideo();
+		}
+		function replayVideo(){  
+			player.seekTo(0);
+			document.getElementById("cuewrap").innerHTML= " ";
+			document.getElementById("cue_chinese").innerHTML= " ";
+			var place = document.getElementsByTagName("p");
+			for(var i=0;i<place.length;i++){
+				place[i].style.color = "black";
+			}
+			player.playVideo();	
+		}
+		function text_present(){
+			switcher_textword = switcher_textword==0?1:0;
+			if(switcher_textword==0){ 
+				document.getElementById("text_word").style.color = "black";//按鈕初始顏色
+				document.getElementById("cuewrap").style.color = "white"; //字幕初始顏色
+			}
+			else{
+				document.getElementById("text_word").style.color = "red"; 
+				document.getElementById("cuewrap").style.color = "black";
+			}		
+		}
+		function CH(){
+			switcher_ch = switcher_ch==0?1:0;
+			if(switcher_ch==0){ 
+				document.getElementById("ch").style.color = "black";
+				document.getElementById("cue_chinese").style.color = "white";
+			}
+			else{
+				document.getElementById("ch").style.color = "red";
+				document.getElementById("cue_chinese").style.color = "black";
+			}	
+		}
+		function getPlayStatus() {
+			var current_time = player.getCurrentTime().toFixed(2);
+			var all_time = player.getDuration().toFixed(2);
+			//顯示當前影片時間
+			document.getElementById('timer').innerHTML = current_time + '秒/'+ all_time +'秒';	
+			{% for lyric in lyrics %}
+				if((current_time >= {{ lyric.start_time }}) && (current_time < {{ lyric.end_time }})){
+					var place = document.getElementsByTagName("p"); //取得所有為p標籤
+					for(var i=0;i<place.length;i++){
+						place[i].style.color = "black";  //右邊歌詞全黑
+					}
+					document.getElementById("s{{lyric.order}}").style.color = "blue"; //當前歌詞以藍色顯示	
+					//顯示影片下方字幕
+					sentence = document.getElementById("s{{lyric.order}}").innerHTML;
+					document.getElementById("cuewrap").innerHTML = sentence; //歌詞字幕(英文)
+					//chinese_words = "{{ lyric.pinyin }}";
+					//document.getElementById("cue_chinese").innerHTML = chinese_words; //中文字幕
+				}
+			{% endfor %}
+		}
+	function reply(){
+		alert("nice");
+	}
+	var imgTop_Array = new Array();
+	var start_Array = new Array();
+	{% for i in lyrics %}	
+		imgTop_Array[{{i.order}}] = $("img#{{i.order}}").position().top - 300;
+		start_Array[{{i.order}}] = {{i.start_time}};
+	{% endfor %}
+	$(document).ready(function() {
+		//判斷此用戶是否按讚過
+		if({{check_user_rating | length}} != 0) switcher_good = 1;
+		else switcher_good=0;
+		//console.log(switcher_good);
+
+		if({{check_user_favorite | length}} != 0) switcher_fav = 1;
+		else switcher_fav=0;
+		$("img.goodgrade").click(function(){
+			var promise1 = switcher_good = switcher_good==0?1:0 ; 
+			var promise2 = document.getElementById("good_place").innerHTML = "<form id='good_form' method='POST' action=''>"+
+							"<input hidden name='goodgrade' id='goodgrade' type='text' value=''>"+
+							"</form>";		
+			var promise3 = $('#goodgrade').val(switcher_good);	
+			$.when(promise1,promise2,promise3).done(function(){
+				$('#good_form').submit();
+			});				
+		});
+
+		$('.favorite').click(function(){
+			var promise1 = switcher_fav = switcher_fav==0?1:0 ; 
+			var promise2 = document.getElementById("fav_place").innerHTML = "<form id='fav_form' method='POST' action=''>"+
+							"<input hidden name='favorite' id='favorite' type='text' value=''>"+
+							"</form>";		
+			var promise3 = $('#favorite').val(switcher_fav);	
+			$.when(promise1,promise2,promise3).done(function(){
+				$('#fav_form').submit();
+				if(switcher_fav == 1) alert("訂閱成功");
+				else alert("已刪除訂閱");
+
+			});				
+		});
+
+		$('img.move').click(function(){
+			var get_imgID = $(this).attr('id');//等同於lyric.order
+			var imgTop_position = imgTop_Array[get_imgID];
+			$("#content").animate({
+				scrollTop: imgTop_position
+			} ,1500);
+			player.seekTo(start_Array[get_imgID]);
+			player.playVideo();	
+		});	
+	});
+
+	function favorite()
+	{
+		var FavoriteButton = document.getElementById("FavoriteButton");
+		var xmlhttp;
+		
+		if(window.XMLHttpRequest) // code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		else // code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				if(FavoriteButton.value == "收藏")
+					FavoriteButton.value = "取消收藏";
+				else if(FavoriteButton.value == "取消收藏")
+					FavoriteButton.value = "收藏";
+				else
+					FavoriteButton.value = "87";
+			}
+		}
+		if(FavoriteButton.value == "收藏")
+		{
+			xmlhttp.open("GET", "/favorite/create/{{ song.songID }}/", true);
+			xmlhttp.send();
+		}
+		else if(FavoriteButton.value == "取消收藏")
+		{
+			xmlhttp.open("GET", "/favorite/delete/{{ song.songID }}/", true);
+			xmlhttp.send();
+		}
+		else
+		{
+			xmlhttp.open("GET", "/favorite/87/", true);
+			xmlhttp.send();
+		}
+	}
+	</script>
+{% endblock %}

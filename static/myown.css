@@ -30,3 +30,42 @@ body {
 	color: red;
 	font-size: 15px; 
 }
+
+.my-textarea {
+	border-radius: 1%
+	margin: 0px 5px 0px 5px;
+}
+
+.my-textarea:focus {
+	background-color: #F0F0F0;
+}
+
+.clickable-words {
+	color: blue;
+	margin: 0px 5px 0px 5px;
+}
+
+.clickable-words:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+button {
+	margin-right: 5px;
+}
+
+#cuewrap{
+	color: #ffffff;
+	width: 100%;
+	padding: 20px;
+	text-align: center; 
+	font-size: 150%;
+}
+
+#cue_chinese{
+	color: #ffffff;
+	padding: 0px;
+	margin: 0px;
+	text-align: center; 
+	font-size: 150%;
+}
