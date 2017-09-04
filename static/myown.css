@@ -59,7 +59,8 @@ button {
 	width: 100%;
 	padding: 20px;
 	text-align: center; 
-	font-size: 150%;
+	font-size: 20px;
+	height: 30px;
 }
 
 #cue_chinese{
@@ -68,4 +69,25 @@ button {
 	margin: 0px;
 	text-align: center; 
 	font-size: 150%;
+}
+
+.my-inline {
+	display: inline-block;
+	margin: 0;
+}
+
+.my-comment-area {
+	border: none;
+	border-bottom: 2px solid #DDDDDD;
+	border-radius: 0;
+	width: 100%	
+}
+
+.my-comment-area:focus {
+	outline-width: 0;
+	border-bottom-color: #0275D8; 
+}
+
+.comment_item {
+	margin-bottom: 20px;
 }

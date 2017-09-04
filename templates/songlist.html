@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block head_title %} 歌曲列表 {% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-8 offset-md-2">
+		<div class="my-block">
+			{% for s in songs %}
+			<div class="row" style="padding: 5px 5px 5px 5px;">
+				<div class="col-md-4">
+					<a href="/video/{{ s.songID }}">
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="240" height="135" />
+					</a>
+				</div>
+				<div class="col-md-8">
+					<p style="font-size:20px;">
+						<a href="/video/{{ s.songID }}">
+							{{ s.singer }} - {{ s.title }}
+						</a><br>
+						<small>
+							<a href="/userinfo/{{ s.uploader }}">{{ s.uploader }}</a><br>
+							觀看次數：{{ s.viewNumber }}
+						</small>
+					</p>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		
+		{% for song in songs %}
+			{{ song.full_name|upper }}<br />
+		{% endfor %}
+		
+		<div class="col-md-4 offset-md-4">
+			<span class="step-links">
+				{% if songs.has_previous %}
+					<a href="?page={{ songs.previous_page_number }}">上一頁</a>
+				{% endif %}
+				<span class="current">
+					第{{ songs.number }}頁，共{{ songs.paginator.num_pages }}頁
+				</span>
+				{% if songs.has_next %}
+					<a href="?page={{ songs.next_page_number }}">下一頁</a>
+				{% endif %}
+			</span>
+		</div>
+	</div>
+</div>
+{% endblock %}

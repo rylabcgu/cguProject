@@ -29,4 +29,7 @@ urlpatterns = [
     url(r'^modify/$', modify),
     url(r'^aftermodify/$',aftermodify),
     url(r'^autoAL/$', autoAL, name='autoAL'),
+    url(r'^songlist/(\w+)/$', songlist),
+    url(r'^userinfo/(\w+)/$', userinfo),
+    url(r'^userinfoedit/$', userinfoEdit),
 ]

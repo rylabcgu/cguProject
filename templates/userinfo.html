@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block head_title %} {{ user2.username }} {% endblock %}
+
+{% block content %}
+<script type="text/javascript">
+	function follow()
+	{
+		var FollowButton = document.getElementById("FollowButton");
+		var xmlhttp;
+		
+		if(window.XMLHttpRequest) // code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		else // code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				if(FollowButton.value == "追蹤")
+					FollowButton.value = "取消追蹤";
+				else if(FollowButton.value == "取消追蹤")
+					FollowButton.value = "追蹤";
+				else
+					FollowButton.value = "87";
+			}
+		}
+		if(FollowButton.value == "追蹤")
+		{
+			xmlhttp.open("GET", "/follow/create/{{ user2.username }}/", true);
+			xmlhttp.send();
+		}
+		else if(FollowButton.value == "取消追蹤")
+		{
+			xmlhttp.open("GET", "/follow/delete/{{ user2.username }}/", true);
+			xmlhttp.send();
+		}
+		else
+		{
+			xmlhttp.open("GET", "/follow/87/", true);
+			xmlhttp.send();
+		}
+	}
+</script>
+
+<div class="row">
+	<div class="col-md-10 offset-md-1">
+		<div class="my-block">
+			<span style="font-size:30px;">基本資料</span>
+			{% if username == id %}
+			<input type='button' value='編輯' onclick='location.href="/userinfoedit/"'>
+			{% else %}
+			<input type="button" id="FollowButton" value="{{ isFollowing }}" onclick="follow()">
+			{% endif %}
+			<ul>
+				<li>ID: {{ userinfo.user.username }}</li>
+				<li>暱稱: {{ userinfo.nickname }}</li>
+				<li>電子郵件: {{ userinfo.user.email }}</li>
+				<li>生日: {{ userinfo.birthdate }}</li>
+				<li>性別: {{ userinfo.gender | yesno:"男,女" }}</li>
+			</ul>
+			<hr>
+			
+			{% if username == id %}
+			<span style="font-size:30px;">訂閱頻道</span>
+			<ul>
+				{% for f in follows %}
+				<li>
+					<a href="/userinfo/{{ f.followee }}/">{{ f.followee }}</a>
+				</li><br>
+				{% endfor %}
+			</ul>
+			<hr>
+			{% endif %}
+			
+			{% if username == id %}
+			<span style="font-size:30px;">收藏清單</span>
+			<div class="row">
+				{% for f in favorites %}
+				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
+					<p style="font-size:14px;">
+						<a href="/video/{{ f.song.songID }}">
+						<img src="http://img.youtube.com/vi/{{ f.song.videoURL }}/0.jpg" width="160" height="90" /><br>
+						{{ f.song.singer }} - {{ f.song.title }}
+						</a><br>
+						<small>
+							<a href="/userinfo/{{ f.song.uploader }}">{{ f.song.uploader }}</a><br>
+							觀看次數：{{ f.song.viewNumber }}
+						</small>
+					</p>
+				</div>
+				{% endfor %}
+			</div>
+			<hr>
+			{% endif %}
+		
+			<span style="font-size:30px;">上傳的影片</span>
+			<div class="row">
+				{% for u in uploadSongs %}
+				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
+					<p style="font-size:14px;">
+						<a href="/video/{{ u.songID }}">
+						<img src="http://img.youtube.com/vi/{{ u.videoURL }}/0.jpg" width="160" height="90" /><br>
+						{{ u.singer }} - {{ u.title }}
+						</a><br>
+						<small>
+							<a href="/userinfo/{{ u.uploader }}">{{ u.uploader }}</a><br>
+							觀看次數：{{ u.viewNumber }}
+						</small>
+					</p>
+				</div>
+				{% endfor %}
+			</div>
+			
+		</div>
+	</div>
+</div>
+{% endblock %}

@@ -1,6 +1,49 @@
 {% extends 'base.html' %}
 
-{% block head_title %}台語Song啦{% endblock %}
+{% block head_title %} 台語Song啦 {% endblock %}
 
 {% block content %}
+<div class="row">
+	<div class="col-md-10 offset-md-1">
+		<div class="my-block">
+			<span style="font-size:30px;"><a href="/songlist/1/">最新影片</a></span>
+			<div class="row">
+				{% for s in song_list1 %}
+				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
+					<p style="font-size:14px;">
+						<a href="/video/{{ s.songID }}">
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="160" height="90" /><br>
+						{{ s.singer }} - {{ s.title }}
+						</a><br>
+						<small>
+							<a href="/userinfo/{{ s.uploader }}">{{ s.uploader }}</a><br>
+							觀看次數：{{ s.viewNumber }}
+						</small>
+					</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		
+		<div class="my-block">
+			<span style="font-size:30px;"><a href="/songlist/2/">熱門影片</a></span>
+			<div class="row">
+				{% for s in song_list2 %}
+				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
+					<p style="font-size:14px;">
+						<a href="/video/{{ s.songID }}">
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="160" height="90" /><br>
+						{{ s.singer }} - {{ s.title }}
+						</a><br>
+						<small>
+							<a href="/userinfo/{{ s.uploader }}">{{ s.uploader }}</a><br>
+							觀看次數：{{ s.viewNumber }}
+						</small>
+					</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
 {% endblock %}

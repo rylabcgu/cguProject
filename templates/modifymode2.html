@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block head_title %} {{ song.singer }} - {{ song.title }}(修改) {% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-10 offset-md-1" style="text-align: center;">
+            <div id="player"></div>
+            <div id="lyricsDiv" class="my-block" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px">
+                <form method="post" action="/aftermodify/">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                        <label class="col-sm-2 offset-sm-2">Song title: </label>
+                        <div class="col-sm-6"><input class="my-line-text" type="text" name="title", size=50 placeholder="歌名" value="{{ song.title }}"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 offset-sm-2">Singer: </label>
+                        <div class="col-sm-6"><input class="my-line-text" type="text" name="singer", size=50 placeholder="歌手" value="{{ song.singer }}"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 offset-sm-2">Composer: </label>
+                        <div class="col-sm-6"><input class="my-line-text" type="text" name="composer", size=50 placeholder="作曲" value="{{ song.composerm }}"></div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 offset-sm-2">Lyricist: </label>
+                        <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 placeholder="作詞" value="{{ song.lyricist }}"></div>
+                    </div>
+                    {% for lyric in lyrics %}
+                        <div class="partLyricsDiv">
+                           <input type='text' name='order' value='{{lyric.order}}' size='1'>
+                           <input type='text' name='ALText' value='{{lyric.pinyin}}' size='30'>
+                           <input type="text" name="lyricsText" value='{{lyric.text}}' size="30">
+                           <input type="text" name="sText" value={{lyric.start_time}} size="5">
+                           <input type="text" name="eText" value={{lyric.end_time}} size="5">
+                           <input type="hidden" name="id" value={{lyric.id}} size="5">
+                           <button type="button" onclick="seekVideoTime()">Play</button>
+                        </div>
+                    {% endfor %}
+                    <br>
+                </form>
+                
+                <input class="btn-primary" type ="button" value ="播放" onclick = "markCurrent()">
+                <input class="btn-primary" type ="button" value ="提交" onclick = "submit()">
+            </div>
+        </div>
+    </div>
+
+    
+    
+
+
+    <script type="text/javascript">
+        var player;   
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player
+            ('player',{
+                height: '400',
+                width: '90%',
+                videoId:'{{ song.videoURL }}',
+                });
+        }
+
+        var repeat;
+        function markCurrent(){
+            clear();
+            window.clearInterval(repeat);
+            var current_order=0;
+            player.seekTo(1);
+            var list=document.getElementsByClassName("partLyricsDiv");
+            repeat = setInterval(function(){
+                var start=document.getElementsByName('sText')[current_order].value;
+                var sec = Math.round(player.getCurrentTime()*10)/10;
+                if(sec>start){
+                    if(current_order>0){
+                        var previous=current_order-1;
+                        document.getElementsByName('lyricsText')[previous].style.color="black";
+                    }
+                    
+                    document.getElementsByName('lyricsText')[current_order].style.color="red";
+                    current_order++;
+                    console.log(start);
+                }
+                if(current_order==list.length){
+                    window.clearInterval(repeat);
+                    console.log('stop')
+                }
+                },100);
+            //document.getElementsByName('lyricsText')[list.length-1].style.color="black";
+        }
+
+        function seekVideoTime() {
+            clear();
+            window.clearInterval(repeat);
+            var text = document.activeElement.parentElement.children[1];
+            var start = document.activeElement.parentElement.children[2].value;
+            var end = document.activeElement.parentElement.children[3].value;
+
+            text.style.color="green";
+
+            if(parseInt(start)) {
+                start = parseFloat(start);
+                end = parseFloat(end);
+                player.seekTo(start);
+                repeat = setInterval(function(){
+                    var sec = Math.round(player.getCurrentTime()*10)/10;
+                    if(sec>end){
+                        player.seekTo(start);
+                    }
+                    },100);
+                }
+        }
+
+        function clear(){
+            var list=document.getElementsByClassName("partLyricsDiv");
+            for(var i = 0; i < list.length; i++) {
+                    document.getElementsByName('lyricsText')[i].style.color="black";}
+        }
+
+        function copyParagraph(){
+            var copyFrom=document.getElementsByName('copyFrom')[0].value-1;
+            var copyTo=document.getElementsByName('copyTo')[0].value-1;
+            var copyBehind=document.getElementsByName('copyBehind')[0].value-1;
+
+            //因為現在order的順序=div的順序+1
+            /*
+            copyFrom=document.getElementsByName('order')[parseInt(copyFrom)-1].value;
+            copyTo=document.getElementsByName('order')[parseInt(copyTo)-1].value;
+            copyBehind=document.getElementsByName('order')[parseInt(copyBehind)-1].value;
+            */
+
+            insertPartLyrics(copyFrom,copyTo,copyBehind)
+
+        }
+
+        function insertPartLyrics(start,end,behind) {
+            var nextDiv;
+            console.log(behind)
+            next=20+behind*2;   //目前先用比較廢的寫法，在parent裡面partLyricsDiv從childNodes[18]開始，只有偶數項才是
+            for(var i=start;i<=end;i++){
+                var newDiv = document.createElement("div");
+                var content = '';
+                content += '<input type="text" name="order" size="1" value="'+document.getElementsByName('order')[i].value+'">'+
+                        '<input type="Text" name="ALText" size="40" value="'+document.getElementsByName('ALText')[i].value+'">'+
+                        '<input type="Text" name="lyricsText" size="40" value="'+document.getElementsByName('lyricsText')[i].value+'">'+
+                        '<input type="Text" name="sText" size="5" value="'+document.getElementsByName('sText')[i].value+'">'+
+                        '<input type="Text" name="eText" size="5" value="'+document.getElementsByName('eText')[i].value+'">'+
+                        '<button type="button" onclick="seekVideoTime()">Play</button>' ;
+
+                newDiv.setAttribute("class", "partLyricsDiv");
+                newDiv.innerHTML = content;
+
+                var parent=document.getElementById('lyricsDiv').childNodes[1];
+
+                //nextDiv = document.getElementsByClassName("partLyricsDiv")[behind];
+                parent.insertBefore(newDiv, parent.childNodes[next]);
+                next++;
+                console.log(i)
+                console.log(next)
+            }
+            console.log(parent.childNodes)
+            
+        }
+
+        function submit(){
+            var form = document.getElementsByTagName("form")[1];
+            console.log(form);
+            form.submit();
+        }
+
+    </script>
+{% endblock %}

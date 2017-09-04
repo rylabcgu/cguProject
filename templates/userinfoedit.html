@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head_title %} {{ user2.username }} {% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-10 offset-md-1">
+		<div class="my-block">
+			<span style="font-size:30px;">基本資料</span>
+			<form action="/userinfo/{{ user.username }}/" method="POST">
+				{% csrf_token %}
+				<label for="nickname">暱稱: </label>
+				<input type="text" name="nickname" value="{{ userinfo.nickname }}"><br>
+				<label for="gender">性別: </label>
+				<select name="gender">
+					<option value="-1" selected disabled>請選擇</option>
+					<option value="1">男</option>
+					<option value="0">女</option>
+				</select><br>
+				<label for="birthdate">生日: </label>
+				<input type="date" name="birthdate"><br>
+				<input type="submit" value="修改">
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}

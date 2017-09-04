@@ -6,11 +6,28 @@ from .models import *
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Count
 from django.template.loader import get_template
+import http.client
+from urllib import parse
+import socket
+import json
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 def index(request):
 	template = 'index.html'
 	args = {}
+
+	if request.user.is_authenticated:
+		args['username'] = request.user.username
+		user = User.objects.get(username=args['username'])
+		args['userinfo'] = Profile.objects.get(user=user)
+	
+	song_list1 = Song.objects.all().order_by('-uploadTime')[:5]
+	song_list2 = Song.objects.all().order_by('-viewNumber')[:5]
+		
+	args['song_list1'] = song_list1
+	args['song_list2'] = song_list2
+
 	return render(request, template, args)
 
 @receiver(email_confirmed)
@@ -76,17 +93,17 @@ def autoAL(request):
 
 
 def video(request, id):
-	template = get_template('video.html')
+	template = "video.html"
+	args = {}
 	song = Song.objects.get(songID=id)
-	lyrics = Lyric.objects.filter(song=song)#.order_by('start_time')
-	youtube_id = song.videoURL	
+	args['song'] = song;
+	args['lyrics'] = Lyric.objects.filter(song=song)#.order_by('start_time')	
 	viewNumbers = song.viewNumber + 1
 	Song.objects.filter(songID=id).update(viewNumber=viewNumbers)
-	song_id= id
-	modify= False 
+	modify = False 
 	this_song_comments = Comment.objects.filter(song=song)
-	show_comments = this_song_comments.order_by('commentTime')[:5]
-	#this_page_comments = 
+	args['this_song_comments'] = this_song_comments
+	args['show_comments'] = this_song_comments.order_by('commentTime')[:5]
 	login_out = " 登出"
 	user= None
 	if request.user.is_authenticated():
@@ -96,9 +113,11 @@ def video(request, id):
 			modify=True
 		else:
 			modify= False
+
+		args['modify'] = modify;
 		rating = Rating.objects.filter(user=user,song=song)
-		check_user_rating =  Rating.objects.filter(user=user,song=song,good_grade=1)
-		check_user_favorite = Favorite.objects.filter(user=user,song=song)
+		args['check_user_rating'] =  Rating.objects.filter(user=user,song=song,good_grade=1)
+		args['check_user_favorite'] = Favorite.objects.filter(user=user,song=song)
 		warning = username + login_out
 		if request.method == 'POST':
 			if 'goodgrade' in request.POST:
@@ -126,7 +145,7 @@ def video(request, id):
 						tellme = "delete"
 			if 'comment_id' in request.POST:
 				user_comment = request.POST['comment_id']
-				message = "感謝您的評論!"
+				args['message'] = "感謝您的評論!"
 				comment = Comment.objects.create(user=user,song=song,content=user_comment)
 				comment.save()
 				warning = "成功儲存!"
@@ -148,12 +167,11 @@ def video(request, id):
 		f = None
 	
 	if f == None:
-		isFavorite = "收藏"
+		args['isFavorite'] = "收藏"
 	else:
-		isFavorite = "取消收藏"
+		args['isFavorite'] = "取消收藏"
 
-	html = template.render(locals())
-	return HttpResponse(html)
+	return render(request, template, args);
 
 
 def favorite(request, favoriteMotion, id):
@@ -173,18 +191,12 @@ def favorite(request, favoriteMotion, id):
 
 def modify(request):
 	if 'id' in request.GET:
-		print(type(request.GET['id']))
-		template = get_template('modifymode2.html')
+		template = 'modifymode2.html'
+		args = {}
 		song = Song.objects.get(songID=request.GET['id'])
-		song_title=song.title
-		song_singer=song.singer
-		song_lyricist=song.lyricist
-		song_composer=song.composer
-		song_videoURL=song.videoURL
-		song_id=song.songID
-		lyrics = Lyric.objects.filter(song=song) 
-		html = template.render(locals())
-		return HttpResponse(html)
+		args['song'] = song
+		args['lyrics'] = Lyric.objects.filter(song=song) 
+		return render(request, template, args)
 
 def aftermodify(request):
 	if request.POST:
@@ -226,3 +238,82 @@ def follow(request, followMotion, id):
 		f = 87
 	
 	return redirect("/")
+
+def userinfo(request, id):
+	template = 'userinfo.html'
+	args = {}
+
+	username = request.user.username
+	user = User.objects.get(username=username)
+	user2 = User.objects.get(username=id)
+	userinfo = Profile.objects.get(user=user2)
+	
+	if request.POST.get('nickname') is not None:
+		userinfo.nickname = request.POST.get('nickname')
+		userinfo.save()
+	if request.POST.get('gender') is not None:	
+		userinfo.gender = request.POST.get('gender')
+		userinfo.save()
+	if request.POST.get('birthdate') is not None:
+		userinfo.birthdate = request.POST.get('birthdate')
+		userinfo.save()
+	
+	favorites = Favorite.objects.filter(user=user2)
+	uploadSongs = Song.objects.filter(uploader=user2)
+	follows = Follow.objects.filter(follower=user)
+	
+	try:
+		f = Follow.objects.get(follower=user, followee=user2)
+	except Follow.DoesNotExist:
+		f = None
+	
+	if f == None:
+		isFollowing = "追蹤"
+	else:
+		isFollowing = "取消追蹤"
+	
+	args['user2'] = user2
+	args['userinfo'] = userinfo
+	args['favorites'] = favorites
+	args['uploadSongs'] = uploadSongs
+	args['follows'] = follows
+	args['isFollowing'] = isFollowing
+	
+	return render(request, template, args)
+	
+def userinfoEdit(request):
+	template = 'userinfoedit.html'
+	args = {}
+	
+	username = request.user.username
+	user = User.objects.get(username=username)
+	userinfo = Profile.objects.get(user=user)
+	
+	args['user'] = user
+	args['userinfo'] = userinfo
+	
+	return render(request, template, args)
+
+def songlist(request, id):
+	template = 'songlist.html'
+	args = {}
+	
+	if id == "1":
+		song_list = Song.objects.all().order_by('-uploadTime')
+	elif id == "2":
+		song_list = Song.objects.all().order_by('-viewNumber')
+	else:
+		song_list = 87
+	
+	paginator = Paginator(song_list, 1)
+	page = request.GET.get('page')
+	try:
+		songs = paginator.page(page)
+	except PageNotAnInteger:
+		songs = paginator.page(1)
+	except EmptyPage:
+		songs = paginator.page(paginator.num_pages)
+	
+	args['songs'] = songs
+	
+	return render(request, template, args)
