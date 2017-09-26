@@ -48,7 +48,7 @@
 	<div class="col-md-10 offset-md-1">
 		<div class="my-block">
 			<span style="font-size:30px;">基本資料</span>
-			{% if username == id %}
+			{% if user.username == id %}
 			<input type='button' value='編輯' onclick='location.href="/userinfoedit/"'>
 			{% else %}
 			<input type="button" id="FollowButton" value="{{ isFollowing }}" onclick="follow()">
@@ -62,7 +62,7 @@
 			</ul>
 			<hr>
 			
-			{% if username == id %}
+			{% if user.username == id %}
 			<span style="font-size:30px;">訂閱頻道</span>
 			<ul>
 				{% for f in follows %}
@@ -74,7 +74,7 @@
 			<hr>
 			{% endif %}
 			
-			{% if username == id %}
+			{% if user.username == id %}
 			<span style="font-size:30px;">收藏清單</span>
 			<div class="row">
 				{% for f in favorites %}

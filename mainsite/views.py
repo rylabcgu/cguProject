@@ -11,6 +11,7 @@ from urllib import parse
 import socket
 import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
@@ -191,7 +192,7 @@ def favorite(request, favoriteMotion, id):
 
 def modify(request):
 	if 'id' in request.GET:
-		template = 'modifymode2.html'
+		template = 'modifymode.html'
 		args = {}
 		song = Song.objects.get(songID=request.GET['id'])
 		args['song'] = song
@@ -215,8 +216,9 @@ def aftermodify(request):
 		count = len(lyricsText)
 
 		for i in range(count):
-			Any = get_object_or_404(Lyric,id=Lid[i])    
-			Any.delete()
+			if Lid[i] !='-1':
+				Any = get_object_or_404(Lyric,id=Lid[i])    
+				Any.delete()
 			l = Lyric.objects.create(song=this_song, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
 			l.save()
 
@@ -226,19 +228,20 @@ def aftermodify(request):
 
 def follow(request, followMotion, id):
 	username = request.user.username
-	user1 = User.objects.get(username=username)
+	user = User.objects.get(username=username)
 	user2 = User.objects.get(username=id)
 	
 	if followMotion=="create":
-		f = Follow.objects.create(follower=user1, followee=user2)
+		f = Follow.objects.create(follower=user, followee=user2)
 	elif followMotion=="delete":
-		f = Follow.objects.get(follower=user1, followee=user2)
+		f = Follow.objects.get(follower=user, followee=user2)
 		f.delete()
 	else:
 		f = 87
 	
 	return redirect("/")
 
+@login_required(login_url='/accounts/login/')
 def userinfo(request, id):
 	template = 'userinfo.html'
 	args = {}
@@ -278,6 +281,7 @@ def userinfo(request, id):
 	args['uploadSongs'] = uploadSongs
 	args['follows'] = follows
 	args['isFollowing'] = isFollowing
+	args['id'] = id
 	
 	return render(request, template, args)
 	
@@ -305,7 +309,7 @@ def songlist(request, id):
 	else:
 		song_list = 87
 	
-	paginator = Paginator(song_list, 1)
+	paginator = Paginator(song_list, 10)
 	page = request.GET.get('page')
 	try:
 		songs = paginator.page(page)

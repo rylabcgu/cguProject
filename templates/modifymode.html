@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+
+{% block head_title %} {{ song.singer }} - {{ song.title }}(修改) {% endblock %}
+{% block content %}
+   <div class="row">
+            <div class="col-md-10 offset-md-1" style="text-align: center;">
+                <div id="player"></div>
+                <div id="lyricsDiv" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px">
+                    <form method="post" action="/aftermodify/">
+                        {% csrf_token %}
+                        <div id="form-main">
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Title: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title", size=50 placeholder="歌曲"  value={{song.title}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Singer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer", size=50 placeholder="歌手"  value={{song.singer}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Composer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer", size=50 placeholder="作曲" value={{song.composer}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Lyricist: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
+                            <input type="hidden" name="producer" value="{{song.uploader}}">
+                            <input type="hidden" name="SongID" value={{song.songID}}>
+                            {% for lyric in lyrics %}
+                                <div class="partLyricsDiv">
+                                   <input type='text' name='order' value='{{lyric.order}}' size='1'>
+                                   <input type='text' name='ALText' value='{{lyric.pinyin}}' size='30'>
+                                   <input type="text" name="lyricsText" value='{{lyric.text}}' size="30">
+                                   <input type="text" name="sText" value={{lyric.start_time | floatformat:3}} size="2">
+                                   <input type="text" name="eText" value={{lyric.end_time}} size="2">
+                                   <input type="hidden" name="id" value={{lyric.id}} size="5">
+                                   <span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>
+                                </div>
+                            {% endfor %}
+                    </div></form>
+                </div>
+                <div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px">
+                    從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph()"><br><br>
+                    <button class="btn-primary" onclick="markCurrent()">循序播放</button>
+                    <button class="btn-primary" onclick="submit()">提交</button>
+                </div>
+        </div>
+
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    {% load staticfiles %}
+        <script src="{% static '/js/jquery.cookie.js' %}" type="text/javascript"></script>
+    <script type="text/javascript">
+        var player;   
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player
+            ('player',{
+                height: '315',
+                width: '560',
+                videoId:'{{song.videoURL}}',
+                });
+        }
+
+        function getVideoTimeFromSpace() {
+            var actElement = document.activeElement;
+            var nextElement;
+            var list=document.getElementsByClassName("partLyricsDiv");
+            var endStart=list[list.length-1]
+            if(actElement && actElement.name === "sText") {
+                actElement.value = player.getCurrentTime().toFixed(2);
+                if(actElement.parentElement === endStart) {
+                    nextElement = actElement.parentElement.children["eText"];
+                }
+                else{
+                    nextElement = actElement.parentElement.nextElementSibling.children["sText"];
+                }
+                nextElement.focus();            
+            }
+            else if(actElement && actElement.name === "eText") {
+                actElement.value = player.getCurrentTime().toFixed(2);
+                if(actElement.parentElement === endStart){
+                    window.alert('結束囉~~');
+                }
+                else{
+                    nextElement = actElement.parentElement.nextElementSibling.children["eText"];
+                    nextElement.focus();
+                }
+            }
+        }
+
+        document.onkeydown = function() {
+            key = event.keyCode;
+            if(key == 32) {             //key space
+                getVideoTimeFromSpace();
+            }
+        }
+
+        function dealTimeArea(){
+            var sTexts = document.getElementsByName("sText");
+            var eTexts = document.getElementsByName("eText");
+            for(var i = 0; i < sTexts.length; i++) {
+                    if(!sTexts[i].value || isNaN(sTexts[i].value)) {
+                        window.alert("請正確輸入所有開始時間欄位");
+                        return false; 
+                    }
+                }
+            if(!eTexts[eTexts.length-1].value || isNaN(eTexts[eTexts.length-1].value) || eTexts[eTexts.length-1].value==' ') {
+                window.alert('請正確輸入最後一個結束時間');
+                return false; 
+            }
+            for(var i = 0; i < eTexts.length-1; i++) {
+                if(!eTexts[i].value || eTexts[i].value===' ') {
+                    time=parseFloat(sTexts[i+1].value)- 0.3;
+                    time=time.toFixed(1);
+                    eTexts[i].value = time;
+                }
+                if(isNaN(eTexts[i].value)) {
+                    window.alert('請正確輸入時間');
+                    return false; 
+                }
+                if(eTexts[i]>sTexts[i]){
+                    window.alert('請正確輸入時間順序');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function markCurrent(){
+            var list=document.getElementsByClassName("partLyricsDiv");
+
+            if(dealTimeArea()==false){
+                    return;
+                }
+
+            var current_order=0;
+            player.seekTo(1);
+            var OldSec=1;
+            var first=1;
+            var start=document.getElementsByName('sText')[0].value;
+            var end=document.getElementsByName('eText')[0].value;
+        
+            repeat = setInterval(function(){ 
+                var sec = Math.round(player.getCurrentTime()*10)/10;
+                var delta=sec - OldSec;
+                if(delta<0 || delta>0.2){
+                    clear();
+                    console.log(delta)
+                    for(var i=0;i<list.length;i++){
+                        if(sec>document.getElementsByName('sText')[i].value && sec<document.getElementsByName('eText')[i].value){
+                            current_order=i;
+                            document.getElementsByName('lyricsText')[current_order].style.color="red";
+                            break;
+                        }}
+                }
+                else{
+                    if(sec>end){
+                        console.log('IN')
+                        document.getElementsByName('lyricsText')[current_order].style.color="black";
+                        current_order++;
+                        first=1;
+                        
+                        if(current_order==list.length){
+                            window.clearInterval(repeat);
+                            console.log('stop')
+                            }
+                        else{
+                            start=document.getElementsByName('sText')[current_order].value;
+                            end=document.getElementsByName('eText')[current_order].value;
+                            }
+                        }
+                    else if(sec>start && first==1){
+                        document.getElementsByName('lyricsText')[current_order].style.color="red";
+                        first=0;
+                        }
+                }
+                OldSec=sec;
+                },100);
+                
+        }
+
+        var repeat;
+        function seekVideoTime() {
+            clear();
+            window.clearInterval(repeat);
+            var text = document.activeElement.parentElement.children[2];
+            var start = document.activeElement.parentElement.children[3].value;
+            var end = document.activeElement.parentElement.children[4].value;
+
+            text.style.color="green";
+
+            if(parseInt(start)) {
+                start = parseFloat(start);
+                end = parseFloat(end);
+                player.seekTo(start);
+                repeat = setInterval(function(){
+                    var sec = Math.round(player.getCurrentTime()*10)/10;
+                    if(sec>end){
+                        player.seekTo(start);
+                    }
+                    },100);
+                }
+        }
+
+        function clear(){
+            var list=document.getElementsByClassName("partLyricsDiv");
+            for(var i = 0; i < list.length; i++) {
+                    document.getElementsByName('lyricsText')[i].style.color="black";}
+        }
+
+       function copyParagraph(){
+            var copyFrom=document.getElementsByName('copyFrom')[0].value-1;
+            var copyTo=document.getElementsByName('copyTo')[0].value-1;
+            var copyBehind=document.getElementsByName('copyBehind')[0].value-1;
+
+            document.getElementsByName('copyFrom')[0].value='';
+            document.getElementsByName('copyTo')[0].value='';
+            document.getElementsByName('copyBehind')[0].value='';
+            insertLyrics(copyFrom,copyTo,copyBehind)
+        }
+
+        function insertLyrics(start,end,behind) {
+            var nextDiv;
+            var next=behind+7;
+            
+            var ceilingS=document.getElementsByName('sText')[behind].value;
+            var ceilingE=document.getElementsByName('eText')[behind].value;
+
+            var deltaE;
+            var deltaS;
+
+            for(var i=start;i<=end;i++){
+                var newDiv = document.createElement("div");
+                if(ceilingS==''){
+                    deltaS=''
+                }
+                else{
+                    var Start=document.getElementsByName('sText')[i].value;
+                    var PreStart=document.getElementsByName('sText')[i-1].value;
+                    if(Start=='' || PreStart==''){
+                        deltaS='';
+                    }
+                    else{
+                        deltaS=parseFloat(Start)-parseFloat(PreStart);
+                        deltaS=parseFloat(ceilingS)+deltaS;
+                    }
+                }
+                if(ceilingE==''){
+                    deltaE=''
+                }
+                else{
+                    var End=document.getElementsByName('eText')[i].value;
+                    var PreEnd=document.getElementsByName('eText')[i-1].value;
+                    
+                    if(End=='' || PreEnd==''){
+                        deltaE='';
+                    }
+                    else{
+                        deltaE=parseFloat(End)-parseFloat(PreEnd);
+                        deltaE=parseFloat(ceilingE)+deltaE;
+                    }
+                }
+                if(deltaE!=''){
+                    deltaE=deltaE.toFixed(1);
+                }
+                if(deltaS!=''){
+                    deltaS=deltaS.toFixed(1);
+                }
+
+                var content='';
+                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, 1, 0);
+
+                newDiv.setAttribute("class", "partLyricsDiv");
+                newDiv.innerHTML = content;
+
+                var parent=document.getElementById('lyricsDiv').children[0];
+
+                parent.insertBefore(newDiv, parent.children[next]);
+                next++;
+                ceilingS=deltaS;
+                ceilingE=deltaE;
+            }
+            
+            ReOrder();
+        }
+
+        function ReOrder(){
+            var ORs = document.getElementsByName("order");
+            for(var i=0; i<ORs.length;i++){
+                ORs[i].value=i+1;
+            }
+        }
+
+        function eachLyricDetail(order, AL, lyric, start, end, withAL, withTime, insert){
+            var content='';
+            if(insert==1){
+                content += '<div class="partLyricsDiv">';
+            }
+            content += '<input type="text" name="order" value="'+order+'" size="1">'+            
+                        '<input type="text" name="ALText" value="' + AL + '" size="30" >'+
+                        '<input type="text" name="lyricsText" value="' + lyric + '" size="30">';
+            if(withTime==1){
+                content +='<input type="text" name="sText" size="2" placeholder="開始" value="' + start + '">' +
+                          '<input type="text" name="eText" size="2" placeholder="結束" value="' + end + '">' ;
+            }
+            else{
+                content +='<input type="text" name="sText" size="2" placeholder="開始">' +
+                          '<input type="text" name="eText" size="2" placeholder="結束">' ;
+            }
+            /*                      
+            content += '<span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>'+
+                        '<span class="clickable-words" onclick="insertPartLyrics(1,0)" tabindex="0">插入</span>'+
+                        '<span class="clickable-words" onclick="insertPartLyrics(1,1)" tabindex="0">插入間奏</span>';*/
+            content+='<input type="hidden" name="id" value="-1" size="5">'+
+                     '<span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>';
+
+            if(insert==1){
+                content += '</div>';
+            }
+            return content;
+        }
+
+        function arrange(){
+            var title = document.getElementsByName("title")[0].value;
+            if(title) {
+                if(dealTimeArea()==false){
+                    return false;
+                }
+                else{
+                    return true;
+                }
+            }
+            else{
+                window.alert('請輸入歌名');
+                return false;
+            }
+
+        }
+
+        function dealTimeArea(){
+            var sTexts = document.getElementsByName("sText");
+            var eTexts = document.getElementsByName("eText");
+            for(var i = 0; i < sTexts.length; i++) {
+                    if(!sTexts[i].value || isNaN(sTexts[i].value)) {
+                        window.alert("請正確輸入所有開始時間欄位");
+                        return false; 
+                    }
+                }
+            if(!eTexts[eTexts.length-1].value || isNaN(eTexts[eTexts.length-1].value) || eTexts[eTexts.length-1].value==' ') {
+                window.alert('請正確輸入最後一個結束時間');
+                return false; 
+            }
+            for(var i = 0; i < eTexts.length-1; i++) {
+                if(!eTexts[i].value || eTexts[i].value===' ') {
+                    time=parseFloat(sTexts[i+1].value)- 0.3;
+                    time=time.toFixed(1);
+                    eTexts[i].value = time;
+                }
+                if(isNaN(eTexts[i].value)) {
+                    window.alert('請正確輸入時間');
+                    return false; 
+                }
+                if(eTexts[i]>sTexts[i]){
+                    window.alert('請正確輸入時間順序');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function submit(){
+            if(arrange()==false){
+                return;
+            }
+            var form = document.getElementsByTagName("form")[1];
+            form.submit();
+        }
+
+    </script>
+{% endblock %}

@@ -34,7 +34,7 @@
 				{% if modify %}	
 					<form action="/modify/" method="get">
 						<input type="hidden" name="id" value="{{ song.songID }}">
-						<input type="submit" value="modify">
+						<input type="submit" value="修改">
 					</form>
 				{% endif  %}
 			</div>
@@ -203,6 +203,10 @@
 						place[i].style.color = "black";  //右邊歌詞全黑
 					}
 					document.getElementById("s{{lyric.order}}").style.color = "blue"; //當前歌詞以藍色顯示	
+					//console.log(mouse_enter);
+					if(({{lyric.order}}) && (mouse_enter==0)){
+						document.getElementById("content").scrollTop = imgTop_Array[{{lyric.order}}];
+					}	
 					//顯示影片下方字幕
 					sentence = document.getElementById("s{{lyric.order}}").innerHTML;
 					document.getElementById("cuewrap").innerHTML = sentence; //歌詞字幕(英文)
@@ -211,9 +215,16 @@
 				}
 			{% endfor %}
 		}
-	function reply(){
-		alert("nice");
-	}
+	//global
+	var mouse_enter = 0;
+	$('#content').mouseenter(function(){
+		mouse_enter = 1;
+	});
+	$('#content').mouseleave(function(){
+		mouse_enter = 0;
+		//setTimeout(function(){ mouse_enter=0; }, 500);
+	});	
+
 	var imgTop_Array = new Array();
 	var start_Array = new Array();
 	{% for i in lyrics %}	
