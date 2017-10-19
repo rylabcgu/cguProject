@@ -32,13 +32,19 @@
 			{{ song.full_name|upper }}<br />
 		{% endfor %}
 		-->
-		<div class="col-md-4 offset-md-4">
+		<div class="col-md-6 offset-md-4">
 			<span class="step-links">
 				{% if songs.has_previous %}
 					<a href="?page={{ songs.previous_page_number }}">上一頁</a>
 				{% endif %}
 				<span class="current">
-					第{{ songs.number }}頁，共{{ songs.paginator.num_pages }}頁
+					{% for page_number in songs.paginator.page_range %}
+						{% if page_number == songs.number %}
+							{{ page_number }}
+						{% else %}
+							<a href="?page={{ page_number }}">{{ page_number }}</a>
+						{% endif %}
+					{% endfor %}
 				</span>
 				{% if songs.has_next %}
 					<a href="?page={{ songs.next_page_number }}">下一頁</a>
