@@ -310,7 +310,7 @@ def songlist(request, id):
 	else:
 		song_list = 87
 	
-	paginator = Paginator(song_list, 10)
+	paginator = Paginator(song_list, 5)
 	page = request.GET.get('page')
 	try:
 		songs = paginator.page(page)
