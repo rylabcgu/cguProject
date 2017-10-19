@@ -13,7 +13,6 @@ import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from .form import *
 
 # Create your views here.
 def index(request):
