@@ -10,9 +10,11 @@ import http.client
 from urllib import parse
 import socket
 import json
+import os
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
 
 # Create your views here.
 def index(request):
@@ -92,6 +94,8 @@ def autoAL(request):
 def video(request, id):
 	template = "video.html"
 	args = {}
+	profile_srch_list = []
+	profile_imgs = {}
 	song = Song.objects.get(songID=id)
 	args['song'] = song;
 	args['lyrics'] = Lyric.objects.filter(song=song)#.order_by('start_time')	
@@ -99,6 +103,15 @@ def video(request, id):
 	Song.objects.filter(songID=id).update(viewNumber=viewNumbers)
 	modify = False 
 	this_song_comments = Comment.objects.filter(song=song)
+	for comment in this_song_comments:
+		if comment.user not in profile_srch_list:
+			profile_srch_list.append(comment.user)
+
+	profiles = Profile.objects.filter(user__in=profile_srch_list)
+	for profile in profiles:
+		profile_imgs[profile.user.username] = profile.profileImg
+
+	args['profile_imgs'] = profile_imgs
 	args['this_song_comments'] = this_song_comments
 	args['show_comments'] = this_song_comments.order_by('commentTime')[:5]
 	login_out = " 登出"
@@ -326,6 +339,9 @@ def songlist(request, id):
 def uploadImage(request):
 	if request.method == "POST":
 		profile = Profile.objects.get(user=request.user)
+		if profile.profileImg:
+			os.remove(os.path.join(settings.MEDIA_ROOT, profile.profileImg.name))
+			
 		profile.profileImg = request.FILES['imgFile']
 		profile.save()
 	
