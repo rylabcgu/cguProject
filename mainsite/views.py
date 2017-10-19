@@ -12,16 +12,13 @@ import socket
 import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import FileSystemStorage
+from .form import *
 
 # Create your views here.
 def index(request):
 	template = 'index.html'
 	args = {}
-
-	if request.user.is_authenticated:
-		args['username'] = request.user.username
-		user = User.objects.get(username=args['username'])
-		args['userinfo'] = Profile.objects.get(user=user)
 	
 	song_list1 = Song.objects.all().order_by('-uploadTime')[:5]
 	song_list2 = Song.objects.all().order_by('-viewNumber')[:5]
@@ -168,27 +165,32 @@ def video(request, id):
 		f = None
 	
 	if f == None:
-		args['isFavorite'] = "收藏"
+		args['isFavorite'] = False
 	else:
-		args['isFavorite'] = "取消收藏"
+		args['isFavorite'] = True
 
 	return render(request, template, args);
 
 
-def favorite(request, favoriteMotion, id):
+def favorite(request, id):
 	username = request.user.username
 	user = User.objects.get(username=username)
 	song = Song.objects.get(songID=id)
-	
-	if favoriteMotion=="create":
-		f = Favorite.objects.create(user=user, song=song)
-	elif favoriteMotion=="delete":
+
+	try:
 		f = Favorite.objects.get(user=user, song=song)
+	except Favorite.DoesNotExist:
+		f = None
+
+	if f:
 		f.delete()
+		isFavorite = 0;
 	else:
-		f = 87
-	
-	return redirect("/")
+		f = Favorite.objects.create(user=user, song=song)
+		f.save();
+		isFavorite = 1;
+
+	return HttpResponse(isFavorite);
 
 def modify(request):
 	if 'id' in request.GET:
@@ -321,3 +323,12 @@ def songlist(request, id):
 	args['songs'] = songs
 	
 	return render(request, template, args)
+
+def uploadImage(request):
+	if request.method == "POST":
+		profile = Profile.objects.get(user=request.user)
+		profile.profileImg = request.FILES['imgFile']
+		profile.save()
+	
+
+	return HttpResponseRedirect("/userinfo/" + request.user.username)
