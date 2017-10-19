@@ -14,8 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from mainsite.views import *
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -25,11 +28,12 @@ urlpatterns = [
     url(r'^makeNew/$', makeNew),
     url(r'^video/(\w+)/$', video),
     url(r'^follow/(\w+)/(\w+)/$', follow),
-    url(r'^favorite/(\w+)/(\w+)/$', favorite),
+    url(r'^favorite/(\w+)/$', favorite),
     url(r'^modify/$', modify),
     url(r'^aftermodify/$',aftermodify),
     url(r'^autoAL/$', autoAL, name='autoAL'),
     url(r'^songlist/(\w+)/$', songlist),
     url(r'^userinfo/(\w+)/$', userinfo),
     url(r'^userinfoedit/$', userinfoEdit),
-]
+    url(r'^uploadImage/$', uploadImage),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

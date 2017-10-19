@@ -91,3 +91,49 @@ button {
 .comment_item {
 	margin-bottom: 20px;
 }
+
+.img-btn:hover {
+	cursor: pointer;
+}
+
+#comment-panel {
+	border-bottom: : none;
+	display: none;
+}
+
+#comment-flip {
+	font-size: 20px;
+	text-align: center; 
+}
+
+#comment-flip:hover {
+	cursor: pointer;
+}
+
+#profileImg {
+	position: relative;
+	display: inline-block;
+	height: 100px;
+	width: 100px;
+	border-radius: 50%;
+	background-position: center;
+	background-size: 100px 100px;
+	overflow: hidden;
+}
+
+#profileImg:hover {
+	cursor: pointer;
+}
+
+#imgInner {
+	background-color: #A0A0A0;
+	color: white;
+	position: absolute;
+	bottom: 0;
+	height: 20px;
+	width: 100%;
+	text-align: center;
+	font-size: 12px;
+	display: none;
+	opacity: 0.5;
+}

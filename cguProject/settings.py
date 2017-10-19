@@ -145,3 +145,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[台語Song啦]"
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/email_confirmation_success'
+
+#uploaded media setting during development
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
+MEDIA_URL = '/media/'
