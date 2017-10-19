@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block head_title %} {{ user2.username }} {% endblock %}
 
@@ -47,6 +48,70 @@
 <div class="row">
 	<div class="col-md-10 offset-md-1">
 		<div class="my-block">
+
+			<div id="profileImg" onclick="uploadImg()">	
+				<div id="imgInner">更換照片</div>
+			</div>
+			<form id="fileForm" method="post" action="/uploadImage/" enctype="multipart/form-data">
+				{% csrf_token %}
+				<input type="file" name="imgFile" id="imgFile" style="display: none;">				
+			</form>
+			<script type="text/javascript">
+				profileImg_div = document.getElementById("profileImg");
+				{% if userinfo.profileImg %}
+					profileImg.style.backgroundImage = "url(/media/{{ userinfo.profileImg }})";
+				{% else %}
+					profileImg.style.backgroundImage = "url({% static 'images/皮卡丘.jpg'%})";
+				{% endif %}
+				
+				$(document).ready(function(){
+				    $("#profileImg").hover(function(){
+				        $("#imgInner").slideDown("fast");
+				    },
+				    function() {
+				    	$("#imgInner").slideUp("fast");
+				    });
+				});
+
+				function uploadImg() {
+					$("#imgFile").click();	
+				}
+
+				function checkImgFile(filename, filesize) {
+					var ext_re = /\.(jpg|png)/;
+					var maxsize = 1000000;		//bytes
+					
+
+					if(!ext_re.test(filename)) {
+						window.alert("只允許上傳jpg或png影像檔");
+						return false;
+					}
+
+					if(filesize > maxsize) {
+						window.alert("影像檔大小至多1MB");
+						return false;
+					}
+
+					return true;	
+				}
+
+
+				$("#imgFile").change(function(){
+					var file = this.files[0];
+					if(!file)
+						return;
+
+					var filename = file.name;
+					var filesize = file.size;
+
+					if(!checkImgFile(filename, filesize))
+						return;
+
+					$("#fileForm").submit();
+					
+				});
+			</script>
+
 			<span style="font-size:30px;">基本資料</span>
 			{% if user.username == id %}
 			<input type='button' value='編輯' onclick='location.href="/userinfoedit/"'>
