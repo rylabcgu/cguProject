@@ -7,6 +7,7 @@ class Profile(models.Model):
 	nickname = models.CharField(max_length=20, blank=True)
 	gender = models.NullBooleanField()
 	birthdate = models.DateField(null=True, blank=True)
+	profileImg = models.ImageField(null=True, blank=True)
 	
 	def __str__(self):
 		return str(self.user)
