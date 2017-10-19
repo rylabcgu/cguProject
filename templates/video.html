@@ -29,27 +29,58 @@
 				</div>
 				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
-				<hr>
-				<input type="button" id="FavoriteButton" value="{{ isFavorite }}" onclick="favorite()">
-				{% if modify %}	
-					<form action="/modify/" method="get">
-						<input type="hidden" name="id" value="{{ song.songID }}">
-						<input type="submit" value="修改">
-					</form>
-				{% endif  %}
+				<hr style="background-color: #0275D8">
+
+				<div>
+					{% if isFavorite %}
+					<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-on.png' %}" onclick="favorite()">
+					{% else %}
+						<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-off.png' %}" onclick="favorite()">
+					{% endif %}
+					{% if modify %}
+						<img class="img-btn" src="{% static 'images/edit.png' %}" onclick="modify_form()" align="right">
+						<script type="text/javascript">
+							function modify_form() {
+								var modify_form = document.createElement("form");
+								modify_form.setAttribute("method", "get");
+								modify_form.setAttribute("action", "/modify/");
+								modify_form.innerHTML = '<input type="hidden" name="id" value="{{ song.songID }}">';
+								document.body.appendChild(modify_form);
+								modify_form.submit();		
+							}
+						</script>
+					{% endif  %}
+				</div>
+				
 			</div>
 
-			<div class="my-block" style="padding: 25px 25px 25px 25px;">
+
+			<div id="comment-panel" class="my-block" style="padding: 25px 25px 25px 25px; display: none">
 				<form name='form' method='POST'>
 					{% csrf_token %}
 						<textarea rows="4" cols="" class="my-comment-area" id='comment_id' name="comment_id" placeholder="留個言吧...."></textarea>
 					<div>
 						<input class="btn-primary" type='submit' value='評論'>
 					</div>
-					<hr>
 				</form>					
-			
+			</div>
+			<div id="comment-flip" class="btn-primary">撰寫留言</div>
+			<script> 
+				$(document).ready(function(){
+				    $("#comment-flip").click(function(){
+				        $("#comment-panel").slideDown("slow");
+				        $("#comment-flip").css("background-color", "white");
+				        $("#comment-flip").css("color", "#0275D8");
+				        $("#comment-flip").css("border", "2px solid #F0F0F0");
+				        $("#comment-flip").css("border-top", "none");
+				        $("#comment-flip").hover( function (){
+				        	$("#comment-flip").css("cursor", "default");
+				        });
+				    });
+				});
+			</script>
 
+			<div class="my-block" style="padding: 25px 25px 25px 25px; margin-top: 20px;">
 				<div id='comment_lists'>
 					<p>留言列表({{ this_song_comments | length }})</p>
 					{% for i in show_comments %}
@@ -64,6 +95,7 @@
 					{% endfor %}
 				</div>
 			</div>
+			
 				
 
 			
@@ -125,7 +157,7 @@
 
 
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	
 	<script type="text/javascript">
 	var player;
 	var tag = document.createElement('script');
@@ -137,6 +169,12 @@
 	var switcher_good = 0;
 	var switcher_bad = 0;
 	var youtube_id = "{{ song.videoURL }}";	
+	var isFavorite;
+	{% if isFavorite %}
+		isFavorite = true;
+	{% else %}
+		isFavorite = false;
+	{% endif %}
 	
 	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 	  function onYouTubeIframeAPIReady() {
@@ -277,7 +315,7 @@
 
 	function favorite()
 	{
-		var FavoriteButton = document.getElementById("FavoriteButton");
+		var fav_btn = document.getElementById("fav-btn");
 		var xmlhttp;
 		
 		if(window.XMLHttpRequest) // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -289,29 +327,24 @@
 		{
 			if(xmlhttp.readyState==4 && xmlhttp.status==200)
 			{
-				if(FavoriteButton.value == "收藏")
-					FavoriteButton.value = "取消收藏";
-				else if(FavoriteButton.value == "取消收藏")
-					FavoriteButton.value = "收藏";
-				else
-					FavoriteButton.value = "87";
+				if(xmlhttp.responseText == "1") {
+					fav_btn.setAttribute("src", "{% static 'images/favorite-on.png' %}");
+					isFavorite = true;
+				}
+				else {
+					fav_btn.setAttribute("src", "{% static 'images/favorite-off.png' %}");
+					isFavorite = false;
+					
+				}
+					
 			}
 		}
-		if(FavoriteButton.value == "收藏")
-		{
-			xmlhttp.open("GET", "/favorite/create/{{ song.songID }}/", true);
-			xmlhttp.send();
-		}
-		else if(FavoriteButton.value == "取消收藏")
-		{
-			xmlhttp.open("GET", "/favorite/delete/{{ song.songID }}/", true);
-			xmlhttp.send();
-		}
+		if(isFavorite)
+			xmlhttp.open("GET", "/favorite/{{ song.songID }}/", true);			
 		else
-		{
-			xmlhttp.open("GET", "/favorite/87/", true);
-			xmlhttp.send();
-		}
+			xmlhttp.open("GET", "/favorite/{{ song.songID }}/", true);
+		
+		xmlhttp.send();
 	}
 	</script>
 
