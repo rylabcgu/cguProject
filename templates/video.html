@@ -97,10 +97,6 @@
 				</div>
 			</div>
 			
-				
-
-			
-
 		</div>
 
 		<div class="col-md-4">
@@ -121,10 +117,22 @@
 						var translate_Array = new Array(); //2 1 2 -> 0 2 3 5陣列表示
 						var tw_Array = new Array(); //紀錄新的台語字斷詞
 						translate_Array[0] = 0;
-						//刪除左右邊的空格以及--問題
-						pinyin = pinyin.replace( /^\s*/, "");
-						pinyin = pinyin.replace(/(\s*$)/g, "");
-						pinyin = pinyin.replace(/--/gi,"-")
+						var check_num = 0; 
+						var temp="";
+						for(var i=0;i<pinyin.length;i++){
+							var charCode = pinyin.charCodeAt(i);
+							if(charCode == 12288){  //全形空白轉半形
+								charCode = 32;
+							}
+							temp += String.fromCharCode(charCode);
+						}
+						pinyin = temp;
+						//刪除左右邊的空格
+						pinyin = pinyin.trim();
+						//刪除字串裡多餘空白及-
+						pinyin = pinyin.replace(/\s(?=\s)/gi,"");//g表全局匹配，i表區分大小寫
+						pinyin = pinyin.replace(/\-(?=\-)/g,"")
+						
 						//切割台羅拼音
 						pinyin_Array = pinyin.split(" ");
 						//刪除台語字的所有空格
@@ -132,21 +140,31 @@
 						//切割台語字
 						text_Array = text.split("");
 						var words = pinyin_Array.length;
+
 						for(var i=0;i<words;i++){
 						  	var reg = new RegExp(find,"g"); //建立了一個正則表達式，計算-數量求出單句自數
 						  	var c = pinyin_Array[i].match(reg); //c即要匹配的字符，其中g表示全局搜索。match則返回匹配的字符（串)
-						  	if(c) record_Array[i] = 1 + c.length;  //寂寞 的 心情 2 1 2
+						  	if(c){
+						  		record_Array[i] = 1 + c.length;  //寂寞 的 心情 2 1 2
+						  		check_num ++;
+						  	} 
 						  	else record_Array[i] = 1;
 						}	
-						  for(var i=0;i<words;i++){
-						  	translate_Array[i+1] = translate_Array[i] + record_Array[i];
-						  	var string="";
-						  	for(var j=translate_Array[i];j<translate_Array[i+1];j++){
-						  		string += text_Array[j];
-						  	} 
-						  	tw_Array[i] = string;
-						  	document.write("<ruby style='font-size: 125%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
-						  }	
+						var checksum = words + check_num;
+						if( checksum == text_Array.length){ //檢查拼音和台語字數量是否一致，不一樣則不對齊
+							for(var i=0;i<words;i++){
+								translate_Array[i+1] = translate_Array[i] + record_Array[i];
+								var string="";
+								for(var j=translate_Array[i];j<translate_Array[i+1];j++){
+									string += text_Array[j];
+								} 
+								tw_Array[i] = string;
+								document.write("<ruby style='font-size: 125%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
+							}
+						}
+						else{
+							document.write("<ruby style='font-size: 125%;'><rb>"+text+"</rb><rt>"+pinyin+"</rt></ruby>&ensp;");
+						}	
 						  document.write("</p></td></tr></table>");
 						{% endfor %}
 					</script>
