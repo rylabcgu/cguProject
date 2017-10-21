@@ -345,5 +345,13 @@ def uploadImage(request):
 		profile.profileImg = request.FILES['imgFile']
 		profile.save()
 	
-
 	return HttpResponseRedirect("/userinfo/" + request.user.username)
+
+def deleteImage(request):
+	profile = Profile.objects.get(user=request.user)
+	if profile.profileImg: 
+			os.remove(os.path.join(settings.MEDIA_ROOT, profile.profileImg.name))
+			profile.profileImg.delete()
+	profile.save()
+	return HttpResponseRedirect("/userinfo/" + request.user.username)
+
