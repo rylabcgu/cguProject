@@ -121,10 +121,6 @@ button {
 	overflow: hidden;
 }
 
-#profileImg:hover {
-	cursor: pointer;
-}
-
 #imgInner {
 	background-color: #A0A0A0;
 	color: white;
