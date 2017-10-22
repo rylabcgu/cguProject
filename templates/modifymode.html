@@ -20,8 +20,8 @@
                                    <input type='text' name='order' value='{{lyric.order}}' size='1'>
                                    <input type='text' name='ALText' value='{{lyric.pinyin}}' size='30'>
                                    <input type="text" name="lyricsText" value='{{lyric.text}}' size="30">
-                                   <input type="text" name="sText" value={{lyric.start_time | floatformat:3}} size="2">
-                                   <input type="text" name="eText" value={{lyric.end_time}} size="2">
+                                   <input type="text" name="sText" value={{lyric.start_time | floatformat:1 }} size="2">
+                                   <input type="text" name="eText" value={{lyric.end_time | floatformat:1}} size="2">
                                    <input type="hidden" name="id" value={{lyric.id}} size="5">
                                    <span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>
                                 </div>
@@ -120,6 +120,8 @@
         }
 
         function markCurrent(){
+            clear();
+            window.clearInterval(repeat);
             var list=document.getElementsByClassName("partLyricsDiv");
 
             if(dealTimeArea()==false){
@@ -176,6 +178,7 @@
         function seekVideoTime() {
             clear();
             window.clearInterval(repeat);
+            console.log(document.activeElement.parentElement.children)
             var text = document.activeElement.parentElement.children[2];
             var start = document.activeElement.parentElement.children[3].value;
             var end = document.activeElement.parentElement.children[4].value;
@@ -201,6 +204,7 @@
                     document.getElementsByName('lyricsText')[i].style.color="black";}
         }
 
+
        function copyParagraph(){
             var copyFrom=document.getElementsByName('copyFrom')[0].value-1;
             var copyTo=document.getElementsByName('copyTo')[0].value-1;
@@ -211,62 +215,77 @@
             document.getElementsByName('copyBehind')[0].value='';
             insertLyrics(copyFrom,copyTo,copyBehind)
         }
+        function insertNoDetailsLyric(start,end,next){
+            for(var i=start;i<=end;i++){
+                var content='';
+                var newDiv = document.createElement("div");
+                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0, 0, 1, 0, 0);
+
+                newDiv.setAttribute("class", "partLyricsDiv");
+                newDiv.innerHTML = content;
+
+                var parent=document.getElementById('lyricsDiv').children[0].children[1];
+
+                parent.insertBefore(newDiv, parent.children[next]);
+                next++;
+            }
+            ReOrder();
+        }
 
         function insertLyrics(start,end,behind) {
-            var nextDiv;
             var next=behind+7;
-            
+
             var ceilingS=document.getElementsByName('sText')[behind].value;
             var ceilingE=document.getElementsByName('eText')[behind].value;
 
             var deltaE;
             var deltaS;
+            var delta;
+            var ifTime;
+            
 
             for(var i=start;i<=end;i++){
-                var newDiv = document.createElement("div");
-                if(ceilingS==''){
-                    deltaS=''
+                if(ceilingE=='' || ceilingS==''){
+                    insertNoDetailsLyric(i,end,next);
+                    return;
                 }
-                else{
-                    var Start=document.getElementsByName('sText')[i].value;
+
+                var Start=document.getElementsByName('sText')[i].value;
+                var End=document.getElementsByName('eText')[i].value;
+                delta=parseFloat(End)-parseFloat(Start);
+                deltaS='';
+                deltaE='';
+                ifTime=0;
+                
+                if(!isNaN(delta)){
+                    deltaS=parseFloat(ceilingE)+0.3;
+                    deltaE=deltaS+delta;
+                }
+                else if(Start!='' && i!=0){
                     var PreStart=document.getElementsByName('sText')[i-1].value;
-                    if(Start=='' || PreStart==''){
-                        deltaS='';
-                    }
-                    else{
+                    if(PreStart!='' && ceilingS!=''){
                         deltaS=parseFloat(Start)-parseFloat(PreStart);
                         deltaS=parseFloat(ceilingS)+deltaS;
                     }
                 }
-                if(ceilingE==''){
-                    deltaE=''
-                }
-                else{
-                    var End=document.getElementsByName('eText')[i].value;
-                    var PreEnd=document.getElementsByName('eText')[i-1].value;
-                    
-                    if(End=='' || PreEnd==''){
-                        deltaE='';
-                    }
-                    else{
-                        deltaE=parseFloat(End)-parseFloat(PreEnd);
-                        deltaE=parseFloat(ceilingE)+deltaE;
-                    }
-                }
+
                 if(deltaE!=''){
+                    ifTime=1;
                     deltaE=deltaE.toFixed(1);
                 }
                 if(deltaS!=''){
+                    ifTime=1;
                     deltaS=deltaS.toFixed(1);
                 }
 
                 var content='';
-                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, 1, 0);
+                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, ifTime, 0);
 
+                var newDiv = document.createElement("div");
                 newDiv.setAttribute("class", "partLyricsDiv");
                 newDiv.innerHTML = content;
 
-                var parent=document.getElementById('lyricsDiv').children[0];
+                var parent=document.getElementById('lyricsDiv').children[0].children[1];
 
                 parent.insertBefore(newDiv, parent.children[next]);
                 next++;
@@ -276,7 +295,7 @@
             
             ReOrder();
         }
-
+        
         function ReOrder(){
             var ORs = document.getElementsByName("order");
             for(var i=0; i<ORs.length;i++){
@@ -328,37 +347,6 @@
                 return false;
             }
 
-        }
-
-        function dealTimeArea(){
-            var sTexts = document.getElementsByName("sText");
-            var eTexts = document.getElementsByName("eText");
-            for(var i = 0; i < sTexts.length; i++) {
-                    if(!sTexts[i].value || isNaN(sTexts[i].value)) {
-                        window.alert("請正確輸入所有開始時間欄位");
-                        return false; 
-                    }
-                }
-            if(!eTexts[eTexts.length-1].value || isNaN(eTexts[eTexts.length-1].value) || eTexts[eTexts.length-1].value==' ') {
-                window.alert('請正確輸入最後一個結束時間');
-                return false; 
-            }
-            for(var i = 0; i < eTexts.length-1; i++) {
-                if(!eTexts[i].value || eTexts[i].value===' ') {
-                    time=parseFloat(sTexts[i+1].value)- 0.3;
-                    time=time.toFixed(1);
-                    eTexts[i].value = time;
-                }
-                if(isNaN(eTexts[i].value)) {
-                    window.alert('請正確輸入時間');
-                    return false; 
-                }
-                if(eTexts[i]>sTexts[i]){
-                    window.alert('請正確輸入時間順序');
-                    return false;
-                }
-            }
-            return true;
         }
 
         function submit(){
