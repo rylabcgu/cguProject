@@ -74,6 +74,7 @@ def autoAL(request):
 	if request.is_ajax():
 		if request.method == 'POST':
 			tmp = json.loads(request.body.decode('utf-8'))
+			typeofAL = tmp[0]
 			hostname = socket.gethostbyname("xn--7zrr5mu7u.xn--v0qr21b.xn--kpry57d")
 			uri = '/' + parse.quote("標漢字音標") + '?' + parse.quote("查詢腔口") + '=' + parse.quote("閩南語") + '&' + parse.quote("查詢語句") + '={0}'
 			
@@ -86,9 +87,16 @@ def autoAL(request):
 
 			r1 = conn.getresponse()
 			data1 = r1.read()
-			data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅數字調']
+			if typeofAL=='N':
+				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅數字調']
+			elif typeofAL=='S':
+				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅閏號調']
+			else:
+				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['吳守禮方音']
+			
 			tmpL.append(data1)
 			return HttpResponse(tmpL)
+
 
 
 def video(request, id):
