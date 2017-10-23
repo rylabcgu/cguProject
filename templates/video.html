@@ -140,17 +140,18 @@
 						//切割台語字
 						text_Array = text.split("");
 						var words = pinyin_Array.length;
-
+						var checksum = 0;
 						for(var i=0;i<words;i++){
 						  	var reg = new RegExp(find,"g"); //建立了一個正則表達式，計算-數量求出單句自數
 						  	var c = pinyin_Array[i].match(reg); //c即要匹配的字符，其中g表示全局搜索。match則返回匹配的字符（串)
 						  	if(c){
 						  		record_Array[i] = 1 + c.length;  //寂寞 的 心情 2 1 2
-						  		check_num ++;
 						  	} 
 						  	else record_Array[i] = 1;
+						  	checksum += record_Array[i];
 						}	
-						var checksum = words + check_num;
+						console.log(checksum);
+						console.log(text_Array.length);
 						if( checksum == text_Array.length){ //檢查拼音和台語字數量是否一致，不一樣則不對齊
 							for(var i=0;i<words;i++){
 								translate_Array[i+1] = translate_Array[i] + record_Array[i];
@@ -159,11 +160,12 @@
 									string += text_Array[j];
 								} 
 								tw_Array[i] = string;
-								document.write("<ruby style='font-size: 125%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
+								document.write("<ruby style='font-size: 180%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
 							}
 						}
 						else{
-							document.write("<ruby style='font-size: 125%;'><rb>"+text+"</rb><rt>"+pinyin+"</rt></ruby>&ensp;");
+							//console.log(check_num);
+							document.write("<ruby style='font-size: 150%;'><rb>"+text+"</rb><rt>"+pinyin+"</rt></ruby>&ensp;");
 						}	
 						  document.write("</p></td></tr></table>");
 						{% endfor %}
