@@ -36,4 +36,5 @@ urlpatterns = [
     url(r'^userinfo/(\w+)/$', userinfo),
     url(r'^userinfoedit/$', userinfoEdit),
     url(r'^uploadImage/$', uploadImage),
+    url(r'^deleteImage/$', deleteImage),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

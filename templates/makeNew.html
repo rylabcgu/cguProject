@@ -130,7 +130,8 @@
 			var totalLyrics = document.getElementById("totalLyrics");
 			var totalALLyrics = document.getElementById("totalALLyrics");
 
-			var all_lyrics = totalLyrics.value.split("\n");
+			var all_lyrics = totalLyrics.value.replace(/\//g,"");
+			all_lyrics = all_lyrics.split("\n");
 			var j=0;
 			for(var i = 0; i < all_lyrics.length; i++){
 				if(all_lyrics[i] !== "") {
@@ -155,10 +156,10 @@
 
 			var btnDiv = document.getElementById("btnDiv");
 
-			var content = '<div class="form-group row"><label class="col-sm-2 offset-sm-2">Song title: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title", size=50 placeholder="歌名"></div></div>' +
-						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">Singer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer", size=50 placeholder="歌手"></div></div>' +
-						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">Composer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer", size=50 placeholder="作曲"></div></div>' +
-						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">Lyricist: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 placeholder="作詞"></div></div>' +
+			var content = '<div class="form-group row"><label class="col-sm-2 offset-sm-2">歌名: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title", size=50 ></div></div>' +
+						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">歌手: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer", size=50 ></div></div>' +
+						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">作曲: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer", size=50 ></div></div>' +
+						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">作詞: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 ></div></div>' +
 						  '<input type="hidden" name="producer" value="{{request.user}}">'+
 						  '<input type="hidden" name="vid" value="'+ vid +'">';
 
@@ -268,8 +269,9 @@
 					window.alert('請正確輸入時間');
 					return false; 
 				}
-				if(eTexts[i]>sTexts[i]){
-					window.alert('請正確輸入時間順序');
+				if(parseFloat(eTexts[i].value)<parseFloat(sTexts[i].value)){
+					var falseSen=i+1;
+					window.alert('請正確輸入時間順序第'+falseSen+'行正確開始及結束時間'+eTexts[i].value+','+sTexts[i].value);
 					return false;
 				}
 			}
@@ -298,22 +300,23 @@
 					AL.type="text";
 					AL.name="ALText";
 					AL.size=40;
+					/*
 					AL.value="";
 					var playButton=document.createElement("SPAN");
 			        playButton.setAttribute('onclick', 'seekVideoTime()');
 			        playButton.setAttribute('class','clickable-words');
-			        playButton.innerHTML='單句循環';
+			        playButton.innerHTML='單句循環';*/
 			        
 
 					list[i].insertBefore(AL,list[i].children[1]);
 					list[i].removeChild(list[i].childNodes[5]);
 					list[i].removeChild(list[i].childNodes[5]);
 					list[i].removeChild(list[i].childNodes[5]);
-					list[i].insertBefore(playButton,list[i].children[5]);
+					//list[i].insertBefore(playButton,list[i].children[5]);
 				}
 
 				var btnDiv = document.getElementById("btnDiv");
-				btnDiv.innerHTML = '<button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="auto(1)">自動注音</button><button class="btn-primary" onclick="submit()">提交</button>';
+				btnDiv.innerHTML = '<select id="TypeofAL"><option value="N">臺羅數字調</option><option value="S">臺羅閏號調</option><option value="W">吳守禮方音</option></select><button class="btn-primary" onclick="auto(1)">自動注音</button><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="submit()">提交</button>';
 			}
 			else if(msg==0){
 				auto(0);
@@ -325,11 +328,19 @@
 		}
 
 		var repeat;
+		/*
+		//有bug喔~
 		function seekVideoTime() {
 			window.clearInterval(repeat);
-			var start = document.activeElement.parentElement.childNodes[3].value;
-			var end = document.activeElement.parentElement.childNodes[4].value;
-			if(parseInt(start)) {
+			console.log(document.activeElement)
+			var start = document.activeElement.parentElement.children[3].value;
+			var end = document.activeElement.parentElement.children[4].value;
+			console.log(start)
+			console.log(end)
+			start=parseFloat(start);
+			end=parseFloat(end);
+			console.log('in')
+			if(!isNAN(start)) {
 				player.seekTo(start);
 				repeat = setInterval(function(){
 					var sec = Math.round(player.getCurrentTime()*10)/10;
@@ -338,7 +349,7 @@
 					}
 					},500);
 				}
-		} 
+		} */
 
         function markCurrent(){
             var list=document.getElementsByClassName("partLyricsDiv");
@@ -412,20 +423,25 @@
 			var newDiv = document.createElement("div");
 			var actElement = document.activeElement;
 			var content='';
-			if(ifAL==1){
-				content += eachLyricDetail(0, '', '', 0, 0, 1, 0, 0);
-			}
-			else if(iftmp==1){
+			if(iftmp==1){
 				var start='';
 				if(actElement.parentElement.children["eText"].value!=''){
 					var start=actElement.parentElement.children["eText"].value;
 				}
-				
-				content += eachLyricDetail(0, 0, '間奏~', start, '', 0, 1, 0);
+				if(ifAL==1){
+					content += eachLyricDetail(0, '', '(間奏~)', start, '', 1, 1, 0);
+				}
+				else{
+					content += eachLyricDetail(0, 0, '(間奏~)', start, '', 0, 1, 0);
+				}
 			}
 			else{
-				
-				content += eachLyricDetail(0, 0, '', 0, 0, 0, 0, 0);
+				if(ifAL==1){
+					content += eachLyricDetail(0, '', '', 0, 0, 1, 0, 0);
+				}
+				else{
+					content += eachLyricDetail(0, 0, '', 0, 0, 0, 0, 0);
+				}
 			}
 
 			newDiv.setAttribute("class", "partLyricsDiv");
@@ -498,7 +514,7 @@
 				ORs[i].value=i+1;
 			}
 		}
-
+		
 		function copyParagraph(ifAL){
             var copyFrom=document.getElementsByName('copyFrom')[0].value-1;
             var copyTo=document.getElementsByName('copyTo')[0].value-1;
@@ -510,62 +526,87 @@
             insertLyrics(copyFrom,copyTo,copyBehind,ifAL)
 		}
 
+		function insertNoDetailsLyric(start,end,next,ifAL){
+			for(var i=start;i<=end;i++){
+        		var content='';
+        		var newDiv = document.createElement("div");
+				if(ifAL==1){
+					content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0, 0, 1, 0, 0);
+				}
+				else{
+					content += eachLyricDetail(document.getElementsByName('order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, 0, 0, 0, 0, 0);
+				}
+
+                newDiv.setAttribute("class", "partLyricsDiv");
+                newDiv.innerHTML = content;
+
+                var parent=document.getElementById('lyricsDiv').children[0].children[1];
+
+                parent.insertBefore(newDiv, parent.children[next]);
+                next++;
+            }
+            ReOrder();
+		}
+
         function insertLyrics(start,end,behind,ifAL) {
-            var nextDiv;
             var next=behind+7;
-            
+
+            if(start==0){
+            	insertNoDetailsLyric(start,end,next,ifAL);
+            	return;
+            }
             var ceilingS=document.getElementsByName('sText')[behind].value;
             var ceilingE=document.getElementsByName('eText')[behind].value;
 
             var deltaE;
             var deltaS;
+            var delta;
+            var ifTime;
+            
 
             for(var i=start;i<=end;i++){
-                var newDiv = document.createElement("div");
-                if(ceilingS==''){
-                	deltaS=''
+                if(ceilingE=='' || ceilingS==''){
+                	insertNoDetailsLyric(i,end,next,ifAL);
+                	return;
                 }
-                else{
-                	var Start=document.getElementsByName('sText')[i].value;
+
+                var Start=document.getElementsByName('sText')[i].value;
+                var End=document.getElementsByName('eText')[i].value;
+                delta=parseFloat(End)-parseFloat(Start);
+                deltaS='';
+                deltaE='';
+                ifTime=0;
+				
+                if(!isNaN(delta)){
+                	deltaS=parseFloat(ceilingE)+0.3;
+                	deltaE=deltaS+delta;
+                }
+                else if(Start!=''){
                 	var PreStart=document.getElementsByName('sText')[i-1].value;
-                	if(Start=='' || PreStart==''){
-                		deltaS='';
-	                }
-	                else{
-	                	deltaS=parseFloat(Start)-parseFloat(PreStart);
-	                	deltaS=parseFloat(ceilingS)+deltaS;
-               		}
+                	if(PreStart!='' && ceilingS!=''){
+                		deltaS=parseFloat(Start)-parseFloat(PreStart);
+                		deltaS=parseFloat(ceilingS)+deltaS;
+                	}
                 }
-                if(ceilingE==''){
-                	deltaE=''
-                }
-                else{
-                	var End=document.getElementsByName('eText')[i].value;
-	                var PreEnd=document.getElementsByName('eText')[i-1].value;
-	                
-	                if(End=='' || PreEnd==''){
-	                	deltaE='';
-	                }
-	                else{
-	                	deltaE=parseFloat(End)-parseFloat(PreEnd);
-	                	deltaE=parseFloat(ceilingE)+deltaE;
-	                }
-                }
+
                 if(deltaE!=''){
+                	ifTime=1;
                 	deltaE=deltaE.toFixed(1);
                 }
                 if(deltaS!=''){
+                	ifTime=1;
                 	deltaS=deltaS.toFixed(1);
                 }
 
                 var content='';
 				if(ifAL==1){
-					content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, 0, 0);
+					content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, ifTime, 0);
 				}
 				else{
-					content += eachLyricDetail(document.getElementsByName('order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 0, 1, 0);
+					content += eachLyricDetail(document.getElementsByName('order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 0, ifTime, 0);
 				}
 
+				var newDiv = document.createElement("div");
                 newDiv.setAttribute("class", "partLyricsDiv");
                 newDiv.innerHTML = content;
 
@@ -593,8 +634,8 @@
         }
 
 		function makeAL(msg,insert){
-			
 			all_AL = msg.split('/');
+			console.log(all_AL)
 			if(insert==0){
 				var list=document.getElementsByClassName("partLyricsDiv");
 				for(var i = 0; i < list.length; i++) {
@@ -602,7 +643,7 @@
 					AL.type="text";
 					AL.name="ALText";
 					AL.size=60;
-					AL.value=all_AL[i];
+					AL.value=all_AL[i+1];
 					
 					list[i].insertBefore(AL,list[i].firstElementChild);
 				}
@@ -611,14 +652,19 @@
 			else{
 				var list=document.getElementsByClassName("partLyricsDiv");
 				for(var i = 0; i < list.length; i++) {
-					document.getElementsByName('ALText')[i].value=all_AL[i]
+					document.getElementsByName('ALText')[i].value=all_AL[i+1]
 				}
 			}
 		}
 
 		function auto(insert){
+
+			var type=document.getElementById("TypeofAL");
+			type=type.options[type.selectedIndex].value;
+	
 			var lyricsTexts = document.getElementsByName("lyricsText");
-			var result='';
+			var result=type;
+			result+='/';
 			for(var i = 0; i < lyricsTexts.length; i++) {
 				result+=lyricsTexts[i].value;
 				result+='/';

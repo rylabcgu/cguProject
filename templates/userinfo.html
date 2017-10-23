@@ -49,13 +49,29 @@
 	<div class="col-md-10 offset-md-1">
 		<div class="my-block">
 
-			<div id="profileImg" onclick="uploadImg()">	
-				<div id="imgInner">更換照片</div>
-			</div>
-			<form id="fileForm" method="post" action="/uploadImage/" enctype="multipart/form-data">
-				{% csrf_token %}
-				<input type="file" name="imgFile" id="imgFile" style="display: none;">				
-			</form>
+			{% ifequal request.user user2 %}
+				<div class="dropdown">
+					<div id="profileImg" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">	
+						<div id="imgInner">變更</div>
+					</div>
+					<div class="dropdown-menu" aria-labelledby="profileImg">
+						{% if userinfo.profileImg %}
+							<a class="dropdown-item" href="#" onclick="uploadImg()">更換照片</a>
+							<a class="dropdown-item" href="#" onclick="delImg()">刪除照片</a>
+						{% else %}
+							<a class="dropdown-item" href="#" onclick="uploadImg()">新增照片</a>
+						{% endif %}
+					</div>
+				</div>
+				<form id="fileForm" method="post" action="/uploadImage/" enctype="multipart/form-data">
+					{% csrf_token %}
+					<input type="file" name="imgFile" id="imgFile" style="display: none;">				
+				</form>
+			{% else %}
+				<div id="profileImg">		
+				</div>
+			{% endifequal %}
+
 			<script type="text/javascript">
 				profileImg_div = document.getElementById("profileImg");
 				{% if userinfo.profileImg %}
@@ -64,17 +80,29 @@
 					profileImg.style.backgroundImage = "url({% static 'images/皮卡丘.jpg'%})";
 				{% endif %}
 				
-				$(document).ready(function(){
-				    $("#profileImg").hover(function(){
-				        $("#imgInner").slideDown("fast");
-				    },
-				    function() {
-				    	$("#imgInner").slideUp("fast");
-				    });
-				});
+				{% ifequal request.user user2 %}
+					$(document).ready(function(){
+					    $("#profileImg").hover(function(){
+					        $("#imgInner").slideDown("fast");
+					        $("#profileImg").css("cursor", "pointer");
+					    },
+					    function() {
+					    	$("#imgInner").slideUp("fast");
+					    	$("#profileImg").css("cursor", "default");
+					    });
+					});
+				{% endifequal %}
 
 				function uploadImg() {
-					$("#imgFile").click();	
+					{% ifequal request.user user2 %}
+						$("#imgFile").click();
+					{% endifequal %}	
+				}
+
+				function delImg() {
+					if(confirm("確定要刪除相片嗎?")) {
+						document.location.href = "/deleteImage/";
+					}	
 				}
 
 				function checkImgFile(filename, filesize) {
