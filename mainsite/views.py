@@ -223,28 +223,32 @@ def modify(request):
 
 def aftermodify(request):
 	if request.POST:
+		delete = request.POST['IfDelete']
 		title = request.POST['title']
 		singer = request.POST['singer']
 		composer = request.POST['composer']
 		lyricist = request.POST['lyricist']
 		this_song = Song.objects.get(songID=request.POST['SongID'])
+		if delete !=0:
+			this_song.delete()
+			return HttpResponseRedirect('/songlist/2/')
+		else:
+			order = request.POST.getlist('order')
+			lyricsText = request.POST.getlist('lyricsText')
+			ALText = request.POST.getlist('ALText')
+			sTime = request.POST.getlist('sText')
+			eTime = request.POST.getlist('eText')
+			Lid = request.POST.getlist('id')
+			count = len(lyricsText)
 
-		order = request.POST.getlist('order')
-		lyricsText = request.POST.getlist('lyricsText')
-		ALText = request.POST.getlist('ALText')
-		sTime = request.POST.getlist('sText')
-		eTime = request.POST.getlist('eText')
-		Lid = request.POST.getlist('id')
-		count = len(lyricsText)
+			for i in range(count):
+				if Lid[i] !='-1':
+					Any = get_object_or_404(Lyric,id=Lid[i])    
+					Any.delete()
+				l = Lyric.objects.create(song=this_song, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
+				l.save()
 
-		for i in range(count):
-			if Lid[i] !='-1':
-				Any = get_object_or_404(Lyric,id=Lid[i])    
-				Any.delete()
-			l = Lyric.objects.create(song=this_song, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
-			l.save()
-
-		return HttpResponseRedirect('/video/'+str(this_song.songID))
+			return HttpResponseRedirect('/video/'+str(this_song.songID))
 	else:
 		return HttpResponse("error")
 
