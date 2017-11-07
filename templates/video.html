@@ -39,7 +39,6 @@
 				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
 				<hr style="background-color: #0275D8">
-
 				<div>
 					{% if isFavorite %}
 						<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-on.png' %}" onclick="favorite()">
@@ -63,12 +62,24 @@
 				</div>
 				
 			</div>
-
-
+<!-- 測試可以post的form			
+			<div> 
+				<form id='test_form'>
+					<input type='text' id='name' />
+					<label for='name'>Name</label>
+					<br/>
+					<input type='password' id='password' />
+					<label for='password'>Password</label>
+					<div>
+						<input class="btn-primary" type='submit' value='submit'>
+					</div>
+				</form>
+			</div>
+-->
 			<div id="comment-panel" class="my-block" style="padding: 25px 25px 25px 25px; display: none">
-				<form id='comment_form' name='form' method='POST'>
-					{% csrf_token %}
-						<textarea rows="4" cols="" class="my-comment-area" id='comment_id' name="comment_id" placeholder="留個言吧...."></textarea>
+				<form id='comment_form'>
+					<!--{% csrf_token %}-->
+						<textarea rows="4" cols="" class="my-comment-area" id='comment_id' placeholder="留個言吧...."></textarea>
 					<div>
 						<input class="btn-primary" type='submit' value='評論'>
 					</div>
@@ -189,6 +200,9 @@
 
 	
 	<script type="text/javascript">
+	$.ajaxSetup({
+	  data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+	});
 	var player;
 	var tag = document.createElement('script');
 	tag.src = "https://www.youtube.com/player_api";
@@ -347,52 +361,24 @@
 			player.playVideo();	
 		});	
 
-		function getCookie(name) {  
-		    var cookieValue = null;  
-		    if (document.cookie && document.cookie != '') {  
-		        var cookies = document.cookie.split(';');  
-		        for (var i = 0; i < cookies.length; i++) {  
-		            var cookie = jQuery.trim(cookies[i]);  
-		            // Does this cookie string begin with the name we want?  
-		            if (cookie.substring(0, name.length + 1) == (name + '=')) {  
-		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));  
-		                break;  
-		            }  
-		        }  
-		    }  
-		    return cookieValue;  
-		}  		  
-		function csrfSafeMethod(method) {  
-		    // these HTTP methods do not require CSRF protection  
-		    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));  
-		}  
-		$.ajaxSetup({  
-		    beforeSend: function(xhr, settings) {  
-		    var csrftoken = getCookie('csrftoken');       
-		    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {  
-		            xhr.setRequestHeader("X-CSRFToken", csrftoken);  
-		        }  
-		    }  
-		});  
 		$(document).on('submit','#comment_form',function(e){
 			e.preventDefault();
-			console.log("ok");
 			$.ajax({
 				type: 'POST',
-				url: '/comment/',
+				url: '/comment/{{song.songID}}/',
 				data:{
 					comment_id: $('#comment_id').val(),
-					//comment_id: $('#comment_form').serialize(),
-					csrfmiddlewaretoken: '{{csrf_token}}'
 				},
-				success: function(correct){
-					if(correct==1)
-						alert("suc");
-					else{
-						alert("err");
-					}
-				}
-			})
+				success:function(data,xhr,status){
+					console.log(data);
+					console.log(xhr);
+					console.log(status);
+				},
+				error:function(){
+					console.log("error");
+				},
+			});
+			return false;
 		});
 
 	});
@@ -447,7 +433,7 @@
 			{
 				var a = JSON.parse(xmlhttp.responseText);
 				document.getElementById("rating").innerHTML = a.count_ratings;
-				console.log(a.count_ratings);
+				//console.log(a.count_ratings);
 				if(a.isLike == "1") {
 					//console.log(xmlhttp.responseText);
 					like_btn.setAttribute("src", "{% static 'images/like-on.png' %}");

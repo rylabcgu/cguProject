@@ -200,21 +200,23 @@ def video(request, id):
 
 	this_song_good_ratings = Rating.objects.filter(song=song,good_grade=1)
 	args['this_song_good_ratings'] = this_song_good_ratings
+
 	return render(request, template, args);
 
 def comment(request, id):
 	username = request.user.username
 	user = User.objects.get(username=username)
 	song = Song.objects.get(songID=id)
+	comment = Comment.objects.create(user=user, song=song, content='test')
+	if request.method == 'POST':
+		user_comment = request.POST['comment_id']
 
-	if request.method == 'POST' and request.is_ajax():
-		user_comemnt = request.POST['comment_id']
-		comment = Comment.objects.create(user=user,song=song,content=user_comment)
+		comment = Comment.objects.create(user=user, song=song, content=user_comment)
 		comment.save()
-		correct = 1
+		mes = "finally"
 	else:
-		correct = 0
-	return HttpResponse(correct)
+		mes = "oooooooops"
+	return HttpResponse(mes)
 
 def like(request, id):
 	username = request.user.username
