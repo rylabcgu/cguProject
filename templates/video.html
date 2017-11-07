@@ -27,6 +27,14 @@
 				<div>
 					<div class="my-inline" style="font-size:24px; width: 49%">{{ song.singer }} - {{ song.title }}</div>
 					<div class="my-inline" style="text-align: right; width: 50%; color: grey;">{{ song.viewNumber }}次觀看</div>
+					<div style="text-align: right;">
+						{% if isLike %}
+							<img class="img-btn" id="like-btn" src="{% static 'images/like-on.png' %}" onclick="like()">
+						{% else %}
+							<img class="img-btn" id="like-btn" src="{% static 'images/like-off.png' %}" onclick="like()">
+						{% endif %}
+						<span id=rating>{{this_song_good_ratings  |length}}</span>
+					</div>
 				</div>
 				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
@@ -34,10 +42,11 @@
 
 				<div>
 					{% if isFavorite %}
-					<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-on.png' %}" onclick="favorite()">
+						<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-on.png' %}" onclick="favorite()">
 					{% else %}
 						<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-off.png' %}" onclick="favorite()">
 					{% endif %}
+
 					{% if modify %}
 						<img class="img-btn" src="{% static 'images/edit.png' %}" onclick="modify_form()" align="right">
 						<script type="text/javascript">
@@ -57,7 +66,7 @@
 
 
 			<div id="comment-panel" class="my-block" style="padding: 25px 25px 25px 25px; display: none">
-				<form name='form' method='POST'>
+				<form id='comment_form' name='form' method='POST'>
 					{% csrf_token %}
 						<textarea rows="4" cols="" class="my-comment-area" id='comment_id' name="comment_id" placeholder="留個言吧...."></textarea>
 					<div>
@@ -150,8 +159,8 @@
 						  	else record_Array[i] = 1;
 						  	checksum += record_Array[i];
 						}	
-						console.log(checksum);
-						console.log(text_Array.length);
+						//console.log(checksum);
+						//console.log(text_Array.length);
 						if( checksum == text_Array.length){ //檢查拼音和台語字數量是否一致，不一樣則不對齊
 							for(var i=0;i<words;i++){
 								translate_Array[i+1] = translate_Array[i] + record_Array[i];
@@ -191,12 +200,17 @@
 	var switcher_bad = 0;
 	var youtube_id = "{{ song.videoURL }}";	
 	var isFavorite;
+	var isLike;
 	{% if isFavorite %}
 		isFavorite = true;
 	{% else %}
 		isFavorite = false;
 	{% endif %}
-	
+	{% if isLike %}
+		isLike = true;
+	{% else %}
+		isLike = false;
+	{% endif %}	
 	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 	  function onYouTubeIframeAPIReady() {
 		player = new YT.Player('player', {
@@ -332,6 +346,55 @@
 			player.seekTo(start_Array[get_imgID]);
 			player.playVideo();	
 		});	
+
+		function getCookie(name) {  
+		    var cookieValue = null;  
+		    if (document.cookie && document.cookie != '') {  
+		        var cookies = document.cookie.split(';');  
+		        for (var i = 0; i < cookies.length; i++) {  
+		            var cookie = jQuery.trim(cookies[i]);  
+		            // Does this cookie string begin with the name we want?  
+		            if (cookie.substring(0, name.length + 1) == (name + '=')) {  
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));  
+		                break;  
+		            }  
+		        }  
+		    }  
+		    return cookieValue;  
+		}  		  
+		function csrfSafeMethod(method) {  
+		    // these HTTP methods do not require CSRF protection  
+		    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));  
+		}  
+		$.ajaxSetup({  
+		    beforeSend: function(xhr, settings) {  
+		    var csrftoken = getCookie('csrftoken');       
+		    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {  
+		            xhr.setRequestHeader("X-CSRFToken", csrftoken);  
+		        }  
+		    }  
+		});  
+		$(document).on('submit','#comment_form',function(e){
+			e.preventDefault();
+			console.log("ok");
+			$.ajax({
+				type: 'POST',
+				url: '/comment/',
+				data:{
+					comment_id: $('#comment_id').val(),
+					//comment_id: $('#comment_form').serialize(),
+					csrfmiddlewaretoken: '{{csrf_token}}'
+				},
+				success: function(correct){
+					if(correct==1)
+						alert("suc");
+					else{
+						alert("err");
+					}
+				}
+			})
+		});
+
 	});
 
 	function favorite()
@@ -367,6 +430,43 @@
 		
 		xmlhttp.send();
 	}
+
+	function like()
+	{
+		var like_btn = document.getElementById("like-btn");
+		var xmlhttp;
+		
+		if(window.XMLHttpRequest) // code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		else // code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var a = JSON.parse(xmlhttp.responseText);
+				document.getElementById("rating").innerHTML = a.count_ratings;
+				console.log(a.count_ratings);
+				if(a.isLike == "1") {
+					//console.log(xmlhttp.responseText);
+					like_btn.setAttribute("src", "{% static 'images/like-on.png' %}");
+					isLike = true;
+				}
+				else {
+					like_btn.setAttribute("src", "{% static 'images/like-off.png' %}");
+					isLike = false;
+				}
+					
+			}
+		}
+		if(isLike)
+			xmlhttp.open("GET", "/like/{{ song.songID }}/", true);			
+		else
+			xmlhttp.open("GET", "/like/{{ song.songID }}/", true);
+		
+		xmlhttp.send();
+	}	
 	</script>
 
 		

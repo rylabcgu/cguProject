@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from allauth.account.signals import email_confirmed
 from django.contrib.auth.models import User
 from .models import *
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db.models import Count
 from django.template.loader import get_template
 import http.client
@@ -14,6 +14,8 @@ import os
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.template.context_processors import csrf
+
 
 
 # Create your views here.
@@ -175,10 +177,7 @@ def video(request, id):
 	else:
 		username = None
 		warning = "您尚未登入"
-
-	this_song_fav = Favorite.objects.filter(song=song)
-	this_song_good_ratings = Rating.objects.filter(song=song,good_grade=1)
-
+	#favorite
 	try:
 		f = Favorite.objects.get(user=user, song=song)
 	except Favorite.DoesNotExist:
@@ -188,9 +187,60 @@ def video(request, id):
 		args['isFavorite'] = False
 	else:
 		args['isFavorite'] = True
+	#like
+	try:
+		r = Rating.objects.get(user=user, song=song, good_grade=1, bad_grade=0)
+	except Rating.DoesNotExist:
+		r = None
 
+	if r == None:
+		args['isLike'] = False
+	else:
+		args['isLike'] = True
+
+	this_song_good_ratings = Rating.objects.filter(song=song,good_grade=1)
+	args['this_song_good_ratings'] = this_song_good_ratings
 	return render(request, template, args);
 
+def comment(request, id):
+	username = request.user.username
+	user = User.objects.get(username=username)
+	song = Song.objects.get(songID=id)
+
+	if request.method == 'POST' and request.is_ajax():
+		user_comemnt = request.POST['comment_id']
+		comment = Comment.objects.create(user=user,song=song,content=user_comment)
+		comment.save()
+		correct = 1
+	else:
+		correct = 0
+	return HttpResponse(correct)
+
+def like(request, id):
+	username = request.user.username
+	user = User.objects.get(username=username)
+	song = Song.objects.get(songID=id)
+	try:
+		r = Rating.objects.get(user=user, song=song, good_grade=1, bad_grade=0)
+	except Rating.DoesNotExist:
+		r = None
+
+	if r:
+		r.delete()
+		isLike = 0;
+	else:
+		r = Rating.objects.create(user=user, song=song, good_grade=1, bad_grade=0)
+		r.save()
+		isLike = 1;
+
+	this_song_good_ratings = Rating.objects.filter(song=song,good_grade=1)
+	count_ratings = len(this_song_good_ratings)
+	Data = {
+		'isLike': isLike,
+		'count_ratings': count_ratings
+	}
+
+	return JsonResponse(Data)
 
 def favorite(request, id):
 	username = request.user.username
@@ -210,7 +260,7 @@ def favorite(request, id):
 		f.save();
 		isFavorite = 1;
 
-	return HttpResponse(isFavorite);
+	return HttpResponse(isFavorite)
 
 def modify(request):
 	if 'id' in request.GET:
