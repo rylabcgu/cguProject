@@ -52,6 +52,7 @@ def makeNew(request):
 		singer = request.POST['singer']
 		composer = request.POST['composer']
 		lyricist = request.POST['lyricist']
+		pinyinType = request.POST['pinyinType']
 
 		order = request.POST.getlist('order')
 		lyricsText = request.POST.getlist('lyricsText')
@@ -62,7 +63,7 @@ def makeNew(request):
 
 		uploader = User.objects.get(username=request.POST['producer'])
 
-		vp = Song.objects.create(title=title, videoURL=vid, singer=singer, composer=composer, lyricist=lyricist, viewNumber=0, uploader=uploader)
+		vp = Song.objects.create(title=title, videoURL=vid, singer=singer, composer=composer, lyricist=lyricist, viewNumber=0, uploader=uploader, pinyinType=int(pinyinType))
 		vp.save()
 
 		for i in range(count):
@@ -89,17 +90,15 @@ def autoAL(request):
 
 			r1 = conn.getresponse()
 			data1 = r1.read()
-			if typeofAL=='N':
+			if typeofAL=='1':
 				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅數字調']
-			elif typeofAL=='S':
+			elif typeofAL=='0':
 				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅閏號調']
 			else:
 				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['吳守禮方音']
 			
 			tmpL.append(data1)
 			return HttpResponse(tmpL)
-
-
 
 def video(request, id):
 	template = "video.html"
