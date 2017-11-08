@@ -281,7 +281,7 @@ def aftermodify(request):
 		composer = request.POST['composer']
 		lyricist = request.POST['lyricist']
 		this_song = Song.objects.get(songID=request.POST['SongID'])
-		if delete !=0:
+		if delete !='0':
 			this_song.delete()
 			return HttpResponseRedirect('/songlist/2/')
 		else:
