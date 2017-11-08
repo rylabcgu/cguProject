@@ -22,6 +22,7 @@ class Song(models.Model):
 	videoURL = models.CharField(max_length=15)
 	uploadTime = models.DateTimeField(auto_now_add=True)
 	viewNumber = models.IntegerField(default=0)
+	pinyinType = models.IntegerField(default=0)		#0: 臺羅閏號調/1: 臺羅數字調/2: 吳守禮方音
 	
 	def __str__(self):
 		return str(self.songID)
