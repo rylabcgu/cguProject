@@ -3,6 +3,7 @@
 {% block head_title %} 歌曲製作 {% endblock %}
 
 {% block content %}
+	{% load staticfiles %}
 	{% if request.user.is_authenticated %}
 		<div class="row" id="initDiv">
 			<div class="col-md-8 offset-md-2">
@@ -28,7 +29,19 @@
 			<div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px"></div>
 			</div>
 		</div>
-		
+		<div class="container">
+			<a data-toggle="modal" data-target="#myModal">需要幫助嗎?</a>
+			<div class="modal fade" id="myModal" role="dialog">
+			    <div class="modal-dialog">
+			      <div class="modal-content">
+			        <div class="modal-body">
+			          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			          <img id="imageresource" src="{% static 'images/green.png' %}" style="width: 400px; height: 264px;">
+			        </div>
+			      </div>
+			    </div>
+			  </div>
+		</div>
 	{% else %}
 		<script type="text/javascript">
 			window.location.href = '/accounts/login'
@@ -72,6 +85,7 @@
 		 	var element = document.getElementById("initDiv");
 			element.parentNode.removeChild(element);
 			document.getElementById("totalLyrics").focus();
+			$("#imageresource").attr('src',"{% static 'images/MakeNewStep2.gif' %}");
 		}
 
 		function getVidFromUrl(url) {
@@ -229,7 +243,8 @@
 						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">作曲: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer", size=50 ></div></div>' +
 						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">作詞: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 ></div></div>' +
 						  '<input type="hidden" name="producer" value="{{request.user}}">'+
-						  '<input type="hidden" name="vid" value="'+ vid +'">';
+						  '<input type="hidden" name="vid" value="'+ vid +'">'+
+						  '<input type="hidden" name="pinyinType" id="pinyinType" value=-1>';;
 
 			if(all_lyrics==""){
 				window.alert('要輸入歌詞阿~~')
@@ -384,7 +399,7 @@
 				}
 
 				var btnDiv = document.getElementById("btnDiv");
-				btnDiv.innerHTML = '<select id="TypeofAL"><option value="N">臺羅數字調</option><option value="S">臺羅閏號調</option><option value="W">吳守禮方音</option></select><button class="btn-primary" onclick="auto(1)">自動注音</button><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="submit()">提交</button>';
+				btnDiv.innerHTML = '<select id="TypeofAL"><option value=1>臺羅數字調</option><option value=0>臺羅閏號調</option><option value=2>吳守禮方音</option></select><button class="btn-primary" onclick="auto(1)">自動注音</button><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="submit()">提交</button>';
 			}
 			else if(msg==0){
 				auto(0);
@@ -695,6 +710,7 @@
 		function makeAL(msg,insert){
 			all_AL = msg.split('/');
 			console.log(all_AL)
+			document.getElementById("pinyinType").value=all_AL[0];
 			if(insert==0){
 				var list=document.getElementsByClassName("partLyricsDiv");
 				for(var i = 0; i < list.length; i++) {
@@ -718,8 +734,12 @@
 
 		function auto(insert){
 
-			var type=document.getElementById("TypeofAL");
-			type=type.options[type.selectedIndex].value;
+			var type=0;
+			if(insert!=0){
+				type=document.getElementById("TypeofAL");
+				type=type.options[type.selectedIndex].value;
+			}
+			console.log(type)
 	
 			var lyricsTexts = document.getElementsByName("lyricsText");
 			var result=type;
@@ -746,10 +766,18 @@
 		function submit(){
 			var OutTime=TimeCaculate();
 			var spend=OutTime-InTime;
-			console.log(spend)
-			/*
+			if(document.getElementById("pinyinType").value==-1){
+				var type=prompt("請問你使用的注音類型為何(輸入數字)?0. 臺羅閏號調/1. 臺羅數字調 /2. 吳守禮方音");
+				if(type==0 || type==1 || type==2){
+					document.getElementById("pinyinType").value=type;
+				}
+				else{
+					alert("要輸入數字阿~")
+					return;
+				}
+			}
 			var form = document.getElementsByTagName("form")[1];
-			form.submit();*/
+			form.submit();
 		}
 
 		function csrfSafeMethod(method) {
