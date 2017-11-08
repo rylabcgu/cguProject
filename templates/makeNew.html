@@ -19,7 +19,7 @@
 		<div class="row">
 			<div class="col-md-10 offset-md-1" style="text-align: center;">
 				<div id="player"></div>
-				<div id="lyricsDiv" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px">
+				<div id="lyricsDiv" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px; overflow: scroll; height: 550px;">
 				<form method="post" action=".">
 					{% csrf_token %}
 					<div id="form-main"></div>
@@ -28,6 +28,7 @@
 			<div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px"></div>
 			</div>
 		</div>
+		
 	{% else %}
 		<script type="text/javascript">
 			window.location.href = '/accounts/login'
@@ -46,29 +47,96 @@
 		var player;
 		var vid;
 		var title;
-		
+		var InTime;		
 
 		function getYTVideo() {
+			InTime=TimeCaculate();
 			var yturl = document.getElementsByName("yturl")[0].value;
 			var form_main = document.getElementById("form-main");
 			var btnDiv = document.getElementById("btnDiv");
 			var lyricsDiv = document.getElementById("lyricsDiv");
 			vid = getVidFromUrl(yturl);
+			if(vid==false){
+				return;
+			}
 			player = new YT.Player('player', {
 		    height: '450',
 		    width: '90%',
 		    videoId: vid
 		 	});
+			
 			btnDiv.setAttribute("class", "my-block");
 			lyricsDiv.setAttribute("class", "my-block");
 		 	form_main.innerHTML = "<textarea class='my-textarea' id='totalLyrics' rows='20' cols='45%' placeholder='請輸入台文歌詞'></textarea><textarea class='my-textarea' id='totalALLyrics' rows='20' cols='45%' placeholder='請輸入羅馬拼音歌詞'></textarea>";
 		 	btnDiv.innerHTML = "<button  class='btn-primary' onclick='seperate()'>台文與羅馬拼音分離</button><button class='btn-primary' onclick='cutLyrics()'>下一步</button>";
 		 	var element = document.getElementById("initDiv");
-			element.parentNode.removeChild(element); 
+			element.parentNode.removeChild(element);
+			document.getElementById("totalLyrics").focus();
 		}
 
+		function getVidFromUrl(url) {
+			if(url.match(/youtube/g) == null){
+				alert("請輸入正確YouTube的網址");
+				return false;
+			}
+			var vid = url.split("/")[3];
+			if(vid.match("v="))	{
+				vid = vid.split("v=")[1];
+				if(vid.match("&")) {
+					vid = vid.split("&")[0];
+					return vid;
+				}
+				else {
+					return vid;
+				}
+			}
+			else {
+				return vid;
+			}
+		}
+
+
+/*
+		$(document).ready(function(){
+			$(window).scroll(function() {
+				if ($(document).scrollTop() > 200) {
+					alert($(document).scrollTop())
+				}
+			});
+		});
+		$(document).ready(function() {
+			$('#player').scrollToFixed();
+		});
+
+		function getPosition (element) {
+			var x = 0;
+			var y = 0;
+			while ( element ) {
+				x += element.offsetLeft - element.scrollLeft + element.clientLeft;
+				y += element.offsetTop - element.scrollLeft + element.clientTop;
+				element = element.offsetParent;
+				console.log('element.offsetLeft: '+element.offsetLeft)
+				console.log('element.scrollLeft: '+element.scrollLeft)
+				console.log('element.clientLeft: '+element.clientLeft)
+				console.log('element.offsetTop: '+element.offsetTop)
+				console.log('element.scrollLeft: '+element.scrollLeft)
+				console.log('element.clientTop: '+element.clientTop)
+				}
+			console.log(x+','+y)
+			
+			}*/
+
+		function TimeCaculate(){
+			var NowDate=new Date();
+			hour=NowDate.getHours();
+			min=NowDate.getMinutes();
+			sec=NowDate.getSeconds();
+			total=hour*60*60+min*60+sec;
+			return total;
+		}
+
+
 		function seperate(){
-			console.log('in')
 			var totalL = document.getElementById("totalLyrics");
 			console.log(typeof(totalL.value))
 			var totalL = totalL.value.split("\n");
@@ -234,11 +302,11 @@
 			content += '<span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>';
 			if(withAL==1){
 				content += '<span class="clickable-words" onclick="insertPartLyrics(1,0)" tabindex="0">插入</span>'+
-							'<span class="clickable-words" onclick="insertPartLyrics(1,1)" tabindex="0">插入間奏</span>';
+							'<span class="clickable-words" onclick="insertPartLyrics(1,1)" tabindex="0">間奏</span>';
 			}
 			else{
 				content += '<span class="clickable-words" onclick="insertPartLyrics(0,0)" tabindex="0">插入</span>'+
-							'<span class="clickable-words" onclick="insertPartLyrics(0,1)" tabindex="0">插入間奏</span>';
+							'<span class="clickable-words" onclick="insertPartLyrics(0,1)" tabindex="0">間奏</span>';
 			}
 			if(insert==1){
 				content += '</div>';
@@ -457,23 +525,7 @@
 			ReOrder();
 		}
 
-		function getVidFromUrl(url) {
-			var vid = url.split("/")[3];
-			if(vid.match("v="))	{
-				vid = vid.split("v=")[1];
-				if(vid.match("&")) {
-					vid = vid.split("&")[0];
-					return vid;
-				}
-				else {
-					return vid;
-				}
-			}
-			else {
-				return vid;
-			}
-		}
-
+		
 		function getVideoTimeFromSpace() {
 			var actElement = document.activeElement;
 			var nextElement;
@@ -487,7 +539,8 @@
 				else{
 					nextElement = actElement.parentElement.nextElementSibling.children["sText"];
 				}
-				nextElement.focus();			
+				nextElement.focus();
+							
 			}
 			else if(actElement && actElement.name === "eText") {
 				actElement.value = player.getCurrentTime().toFixed(1);
@@ -499,6 +552,12 @@
 					nextElement.focus();
 				}
 			}
+			ScrollAdjust();
+		}
+
+		function ScrollAdjust(){
+			//nextElement.scrollIntoView();
+			window.lyricsDiv.scrollBy(0, 10);
 		}
 
 		document.onkeydown = function() {
@@ -685,8 +744,12 @@
 		}
 
 		function submit(){
+			var OutTime=TimeCaculate();
+			var spend=OutTime-InTime;
+			console.log(spend)
+			/*
 			var form = document.getElementsByTagName("form")[1];
-			form.submit();
+			form.submit();*/
 		}
 
 		function csrfSafeMethod(method) {
