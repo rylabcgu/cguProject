@@ -15,6 +15,7 @@
                             <div class="form-group row"><label class="col-sm-2 offset-sm-2">Lyricist: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
                             <input type="hidden" name="producer" value="{{song.uploader}}">
                             <input type="hidden" name="SongID" value={{song.songID}}>
+                            <input type="hidden" name="IfDelete" id="IfDelete" value="0">
                             {% for lyric in lyrics %}
                                 <div class="partLyricsDiv">
                                    <input type='text' name='order' value='{{lyric.order}}' size='1'>
@@ -23,7 +24,9 @@
                                    <input type="text" name="sText" value={{lyric.start_time | floatformat:1 }} size="2">
                                    <input type="text" name="eText" value={{lyric.end_time | floatformat:1}} size="2">
                                    <input type="hidden" name="id" value={{lyric.id}} size="5">
-                                   <span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>
+                                   <span class="clickable-words" onclick="seekVideoTime()" tabindex="0">Play</span>
+                                   <span class="clickable-words" onclick="insertPartLyrics(1)" tabindex="0">間奏</span>
+                                   <span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>
                                 </div>
                             {% endfor %}
                     </div></form>
@@ -31,7 +34,8 @@
                 <div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px">
                     從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph()"><br><br>
                     <button class="btn-primary" onclick="markCurrent()">循序播放</button>
-                    <button class="btn-primary" onclick="submit()">提交</button>
+                    <button class="btn-primary" onclick="submit(1)">提交</button>
+                    <button class="btn-primary" onclick="deleteSong()">刪除歌曲</button>
                 </div>
         </div>
 
@@ -60,7 +64,7 @@
             var list=document.getElementsByClassName("partLyricsDiv");
             var endStart=list[list.length-1]
             if(actElement && actElement.name === "sText") {
-                actElement.value = player.getCurrentTime().toFixed(2);
+                actElement.value = player.getCurrentTime().toFixed(1);
                 if(actElement.parentElement === endStart) {
                     nextElement = actElement.parentElement.children["eText"];
                 }
@@ -70,7 +74,7 @@
                 nextElement.focus();            
             }
             else if(actElement && actElement.name === "eText") {
-                actElement.value = player.getCurrentTime().toFixed(2);
+                actElement.value = player.getCurrentTime().toFixed(1);
                 if(actElement.parentElement === endStart){
                     window.alert('結束囉~~');
                 }
@@ -88,6 +92,43 @@
             }
         }
 
+        function insertPartLyrics(iftmp) {
+            var nextDiv;
+            var parent = document.activeElement.parentElement.parentElement;
+            var newDiv = document.createElement("div");
+            var actElement = document.activeElement;
+            var content='';
+            if(iftmp==1){
+                var start='';
+                if(actElement.parentElement.children["eText"].value!='' && actElement.parentElement.children["eText"].value!= 0.0){
+                    var start=actElement.parentElement.children["eText"].value;
+                }
+                content += eachLyricDetail(0, '', '(間奏~)', start, '', 1, 0);
+            }
+            else{
+                    content += eachLyricDetail(0, '', '', 0, 0, 0, 0);
+            }
+
+            newDiv.setAttribute("class", "partLyricsDiv");
+            newDiv.innerHTML = content;
+
+            nextDiv = document.activeElement.parentElement.nextElementSibling;
+            if(nextDiv) {
+                parent.insertBefore(newDiv, nextDiv);
+            }
+            else {
+                parent.appendChild(newDiv);
+            }
+            ReOrder();
+        }
+
+        function delPartLyrics() {
+            var partLyricsDiv = document.activeElement.parentElement;
+            var parent = partLyricsDiv.parentElement;
+            parent.removeChild(partLyricsDiv);
+            ReOrder();
+        }
+
         function dealTimeArea(){
             var sTexts = document.getElementsByName("sText");
             var eTexts = document.getElementsByName("eText");
@@ -102,7 +143,7 @@
                 return false; 
             }
             for(var i = 0; i < eTexts.length-1; i++) {
-                if(!eTexts[i].value || eTexts[i].value===' ') {
+                if(!eTexts[i].value || eTexts[i].value===' ' || eTexts[i].value==0) {
                     time=parseFloat(sTexts[i+1].value)- 0.3;
                     time=time.toFixed(1);
                     eTexts[i].value = time;
@@ -111,8 +152,9 @@
                     window.alert('請正確輸入時間');
                     return false; 
                 }
-                if(eTexts[i]>sTexts[i]){
-                    window.alert('請正確輸入時間順序');
+                if(parseFloat(eTexts[i].value)<parseFloat(sTexts[i].value)){
+                    var falseSen=i+1;
+                    window.alert('請正確輸入時間順序第'+falseSen+'行正確開始及結束時間('+eTexts[i].value+'<'+sTexts[i].value+')');
                     return false;
                 }
             }
@@ -206,6 +248,9 @@
 
 
        function copyParagraph(){
+            if(document.getElementsByName('order')[0].value==1){
+                ReOrder();
+            }
             var copyFrom=document.getElementsByName('copyFrom')[0].value-1;
             var copyTo=document.getElementsByName('copyTo')[0].value-1;
             var copyBehind=document.getElementsByName('copyBehind')[0].value-1;
@@ -215,6 +260,7 @@
             document.getElementsByName('copyBehind')[0].value='';
             insertLyrics(copyFrom,copyTo,copyBehind)
         }
+
         function insertNoDetailsLyric(start,end,next){
             for(var i=start;i<=end;i++){
                 var content='';
@@ -233,7 +279,7 @@
         }
 
         function insertLyrics(start,end,behind) {
-            var next=behind+7;
+            var next=behind+8;
 
             var ceilingS=document.getElementsByName('sText')[behind].value;
             var ceilingE=document.getElementsByName('eText')[behind].value;
@@ -251,15 +297,25 @@
                 }
 
                 var Start=document.getElementsByName('sText')[i].value;
-                var End=document.getElementsByName('eText')[i].value;
-                delta=parseFloat(End)-parseFloat(Start);
+                //var End=document.getElementsByName('eText')[i].value;
+                //delta=parseFloat(End)-parseFloat(Start);
                 deltaS='';
-                deltaE='';
                 ifTime=0;
-                
+                if(parseFloat(ceilingE)>0.3){
+                    if(i==start){
+                        deltaS=parseFloat(ceilingE)+0.3;
+                    }
+                    else if(i>start){
+                        var PreStart=document.getElementsByName('sText')[i-1].value;
+                        if(!isNaN(PreStart)){
+                            deltaS=parseFloat(Start)-parseFloat(PreStart);
+                            deltaS=parseFloat(ceilingS)+deltaS;}
+                    } 
+                }
+                /*
                 if(!isNaN(delta)){
                     deltaS=parseFloat(ceilingE)+0.3;
-                    deltaE=deltaS+delta;
+                    //deltaE=deltaS+delta;
                 }
                 else if(Start!='' && i!=0){
                     var PreStart=document.getElementsByName('sText')[i-1].value;
@@ -267,19 +323,19 @@
                         deltaS=parseFloat(Start)-parseFloat(PreStart);
                         deltaS=parseFloat(ceilingS)+deltaS;
                     }
-                }
+                }*/
 
-                if(deltaE!=''){
-                    ifTime=1;
-                    deltaE=deltaE.toFixed(1);
-                }
-                if(deltaS!=''){
+                if(deltaS>0){
                     ifTime=1;
                     deltaS=deltaS.toFixed(1);
                 }
-
+                else{
+                    insertNoDetailsLyric(i,end,next);
+                    return;
+                }
+                
                 var content='';
-                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, ifTime, 0);
+                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, '', 1, ifTime, 0);
 
                 var newDiv = document.createElement("div");
                 newDiv.setAttribute("class", "partLyricsDiv");
@@ -289,8 +345,8 @@
 
                 parent.insertBefore(newDiv, parent.children[next]);
                 next++;
+                
                 ceilingS=deltaS;
-                ceilingE=deltaE;
             }
             
             ReOrder();
@@ -303,7 +359,7 @@
             }
         }
 
-        function eachLyricDetail(order, AL, lyric, start, end, withAL, withTime, insert){
+        function eachLyricDetail(order, AL, lyric, start, end, withTime, insert){
             var content='';
             if(insert==1){
                 content += '<div class="partLyricsDiv">';
@@ -320,11 +376,11 @@
                           '<input type="text" name="eText" size="2" placeholder="結束">' ;
             }
             /*                      
-            content += '<span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>'+
-                        '<span class="clickable-words" onclick="insertPartLyrics(1,0)" tabindex="0">插入</span>'+
-                        '<span class="clickable-words" onclick="insertPartLyrics(1,1)" tabindex="0">插入間奏</span>';*/
+            content += '<span class="clickable-words" onclick="insertPartLyrics(1,0)" tabindex="0">插入</span>'+*/
             content+='<input type="hidden" name="id" value="-1" size="5">'+
-                     '<span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>';
+                     '<span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>'+
+                     '<span class="clickable-words" onclick="Interlude()" tabindex="0">間奏</span>'+
+                     '<span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>';
 
             if(insert==1){
                 content += '</div>';
@@ -349,12 +405,29 @@
 
         }
 
-        function submit(){
-            if(arrange()==false){
-                return;
+        function deleteSong(){
+            document.getElementById('IfDelete').value=1;
+            submit(0);
+        }
+
+        function submit(check){
+            if(check==0){
+                var form = document.getElementsByTagName("form")[1];
+                //console.log(form)
+                //console.log(document.getElementById('IfDelete').value)
+                form.submit();
             }
-            var form = document.getElementsByTagName("form")[1];
-            form.submit();
+            else{
+                 ReOrder();
+                if(arrange()==false){
+                    return;
+                }
+                else{
+                    var form = document.getElementsByTagName("form")[1];
+                    form.submit();
+                }
+            }
+           
         }
 
     </script>
