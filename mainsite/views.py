@@ -15,6 +15,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.template.context_processors import csrf
+from django.utils import timezone
 
 
 
@@ -103,6 +104,7 @@ def autoAL(request):
 def video(request, id):
 	template = "video.html"
 	args = {}
+	args['now'] = timezone.now()
 	profile_srch_list = []
 	profile_imgs = {}
 	song = Song.objects.get(songID=id)
@@ -122,61 +124,27 @@ def video(request, id):
 
 	args['profile_imgs'] = profile_imgs
 	args['this_song_comments'] = this_song_comments
-	args['show_comments'] = this_song_comments.order_by('commentTime')[:5]
+	args['show_comments'] = this_song_comments.order_by('commentTime')#[:5]
 	login_out = " 登出"
 	user= None
 	if request.user.is_authenticated():
 		username = request.user.username
 		user = User.objects.get(username=username)
+		args['user'] = user;
+		args['profileImg'] = Profile.objects.filter(user=user)
 		if song.uploader==User.objects.get(username=request.user.username):
 			modify=True
 		else:
 			modify= False
 
 		args['modify'] = modify;
-		rating = Rating.objects.filter(user=user,song=song)
 		args['check_user_rating'] =  Rating.objects.filter(user=user,song=song,good_grade=1)
 		args['check_user_favorite'] = Favorite.objects.filter(user=user,song=song)
 		warning = username + login_out
-		if request.method == 'POST':
-			if 'goodgrade' in request.POST:
-				user_goodgrade = request.POST['goodgrade']
-				if(user_goodgrade):
-					goodnumber = int(user_goodgrade)
-					#check =  "有user_goodegrade" + user_goodgrade
-					if (int(goodnumber) == 1):
-						goodgrade = Rating.objects.create(user=user,song=song,good_grade=user_goodgrade,bad_grade=0)
-						goodgrade.save()
-
-					else:
-						rating.delete()	
-			if 'favorite' in request.POST:
-				user_fav = request.POST['favorite']
-				if(user_fav):
-					fav_num = int(user_fav)
-					if(int(fav_num) == 1):
-						favorite = Favorite.objects.create(user=user,song=song)
-						favorite.save()
-						tellme = "save"
-					else:
-						favorite = Favorite.objects.filter(user=user,song=song)
-						favorite.delete()
-						tellme = "delete"
-			if 'comment_id' in request.POST:
-				user_comment = request.POST['comment_id']
-				args['message'] = "感謝您的評論!"
-				comment = Comment.objects.create(user=user,song=song,content=user_comment)
-				comment.save()
-				warning = "成功儲存!"
-			else:
-				comment_id = False
-		else:
-			user_comment = None
-			message = "無留言送出!"
 	else:
 		username = None
 		warning = "您尚未登入"
-	#favorite
+	###favorite 圖形初始畫面
 	try:
 		f = Favorite.objects.get(user=user, song=song)
 	except Favorite.DoesNotExist:
@@ -186,7 +154,7 @@ def video(request, id):
 		args['isFavorite'] = False
 	else:
 		args['isFavorite'] = True
-	#like
+	###like 圖形初始畫面
 	try:
 		r = Rating.objects.get(user=user, song=song, good_grade=1, bad_grade=0)
 	except Rating.DoesNotExist:
@@ -196,7 +164,7 @@ def video(request, id):
 		args['isLike'] = False
 	else:
 		args['isLike'] = True
-
+	### 取得此首歌的按讚數
 	this_song_good_ratings = Rating.objects.filter(song=song,good_grade=1)
 	args['this_song_good_ratings'] = this_song_good_ratings
 
@@ -206,16 +174,18 @@ def comment(request, id):
 	username = request.user.username
 	user = User.objects.get(username=username)
 	song = Song.objects.get(songID=id)
-	comment = Comment.objects.create(user=user, song=song, content='test')
+	
 	if request.method == 'POST':
 		user_comment = request.POST['comment_id']
 
 		comment = Comment.objects.create(user=user, song=song, content=user_comment)
 		comment.save()
-		mes = "finally"
+		mes = "comment saved already"
 	else:
 		mes = "oooooooops"
-	return HttpResponse(mes)
+
+	return HttpResponse(comment)
+
 
 def like(request, id):
 	username = request.user.username

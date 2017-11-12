@@ -103,7 +103,7 @@
 
 			<div class="my-block" style="padding: 25px 25px 25px 25px; margin-top: 20px;">
 				<div id='comment_lists'>
-					<p>留言列表({{ this_song_comments | length }})</p>
+					<p id="comment_length">留言列表({{ this_song_comments | length }})</p>
 					{% for i in show_comments %}
 						<div class="comment_item">
 							<div>
@@ -114,6 +114,7 @@
 							<span style="color: grey; font-size: 13px; padding-left: 40px;">{{ i.commentTime }}</span>
 						</div>
 					{% endfor %}
+					<div id="ajax_post"></div>
 				</div>
 			</div>
 			
@@ -370,9 +371,23 @@
 					comment_id: $('#comment_id').val(),
 				},
 				success:function(data,xhr,status){
-					console.log(data);
-					console.log(xhr);
-					console.log(status);
+					//console.log(data); data為評論內容
+					//取得使用者頭貼在前端加入一筆短暫留言，之後刷新頁面再交給資料庫取出
+					{% for l in profileImg %}
+						document.getElementById("ajax_post").innerHTML = 
+						"<div>"+
+							"<img src='/media/{{l.profileImg}}'style='width:36px; height: 36px'>"+
+							"<strong><a href='/userinfo/{{ user }}'>{{ user | capfirst }}</a></strong>"+
+						"</div>"+
+						"<div style='padding: 0 40px 0 40px;'>"+data+"</div>"+
+						"<span style='color: grey; font-size: 13px; padding-left: 40px;'>{{now}}</span>";
+						var comment_length = {{ this_song_comments | length }} + 1;
+						document.getElementById("comment_length").innerHTML = 
+						"留言列表(" + comment_length +")";
+						//console.log(xhr);
+						//console.log(status);
+					{% endfor %}
+
 				},
 				error:function(){
 					console.log("error");
@@ -431,6 +446,7 @@
 		{
 			if(xmlhttp.readyState==4 && xmlhttp.status==200)
 			{
+				//更新最新按讚數
 				var a = JSON.parse(xmlhttp.responseText);
 				document.getElementById("rating").innerHTML = a.count_ratings;
 				//console.log(a.count_ratings);
