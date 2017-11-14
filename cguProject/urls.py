@@ -23,7 +23,8 @@ from mainsite.views import *
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('allauth.urls')),
-    url(r'^$', index),
+    url(r'^$', home),
+	url(r'^index/$', index),
     url(r'^email_confirmation_success/$', email_confirmation_success),
     url(r'^makeNew/$', makeNew),
     url(r'^video/(\w+)/$', video),
@@ -39,4 +40,5 @@ urlpatterns = [
     url(r'^userinfoedit/$', userinfoEdit),
     url(r'^uploadImage/$', uploadImage),
     url(r'^deleteImage/$', deleteImage),
+	url(r'^home/$', home),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

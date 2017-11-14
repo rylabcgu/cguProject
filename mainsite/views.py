@@ -20,6 +20,11 @@ from django.utils import timezone
 
 
 # Create your views here.
+def home(request):
+	template = 'home.html'
+	args = {}
+	return render(request, template, args)
+
 def index(request):
 	template = 'index.html'
 	args = {}
