@@ -8,14 +8,14 @@
 	<div class="row">
 		<div class="col-md-8">
 
-			<div id="videoDiv" style="width:100%; background-color: #000000;">
+			<div id="videoDiv" style="width:100%;background-color: #000000;">
 				<div id="player"></div> <!-- 影片的位置 -->
 				<div id="cuewrap"></div> <!-- 放字幕的地方 -->
 				<!--<b><div id="cue_chinese"></div></b>-->
 				<div>
-					<br><br>
-					<button onclick="playVideo();">播放{{Page_id}}</button>
-					<button onclick="pauseVideo();">暫停</button>
+					<br><br><br><br><br>
+					<!--<button onclick="playVideo();">播放</button>
+					<button onclick="pauseVideo();">暫停</button>-->
 					<button onclick="replayVideo();">重頭播放</button>	
 					<button id="text_word" onclick="text_present();">字幕</button>
 					<!--<button id="ch" onclick="CH();">拼音</button>-->
@@ -27,24 +27,23 @@
 				<div>
 					<div class="my-inline" style="font-size:24px; width: 49%">{{ song.singer }} - {{ song.title }}</div>
 					<div class="my-inline" style="text-align: right; width: 50%; color: grey;">{{ song.viewNumber }}次觀看</div>
-					<div style="text-align: right;">
-						{% if isLike %}
-							<img class="img-btn" id="like-btn" src="{% static 'images/like-on.png' %}" onclick="like()">
-						{% else %}
-							<img class="img-btn" id="like-btn" src="{% static 'images/like-off.png' %}" onclick="like()">
-						{% endif %}
-						<span id=rating>{{this_song_good_ratings  |length}}</span>
-					</div>
 				</div>
 				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
 				<hr style="background-color: #0275D8">
-				<div>
+				<div><!--訂閱 -->
 					{% if isFavorite %}
 						<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-on.png' %}" onclick="favorite()">
 					{% else %}
 						<img class="img-btn" id="fav-btn" src="{% static 'images/favorite-off.png' %}" onclick="favorite()">
 					{% endif %}
+					<!-- 按讚 -->&nbsp;
+					{% if isLike %}
+						<img class="img-btn" id="like-btn" src="{% static 'images/like-on.png' %}" onclick="like()">
+					{% else %}
+						<img class="img-btn" id="like-btn" src="{% static 'images/like-off.png' %}" onclick="like()">
+					{% endif %}
+					<span id=rating>{{this_song_good_ratings  |length}}</span>
 
 					{% if modify %}
 						<img class="img-btn" src="{% static 'images/edit.png' %}" onclick="modify_form()" align="right">
@@ -127,8 +126,9 @@
 						{% for lyric in lyrics %}
 						document.write("<table><tr>");
 						{% load staticfiles %}
-						document.write("<td><img class ='move' id='{{lyric.order}}'' src='{% static 'images/green.png' %}''></td>");
-						document.write("<td><p id='s{{lyric.order}}'>");
+						//document.write("<td><img class ='move' id='{{lyric.order}}'' src='{% static 'images/green.png' %}''></td>");
+						document.write("<td>{{lyric.order}}.</td>");
+						document.write("<td><p class='move' id='{{lyric.order}}' style='cursor:pointer'>");
 						var find = '-';
 						var pinyin = '{{lyric.pinyin}}';
 						var text = '{{lyric.text}}';
@@ -249,8 +249,8 @@
 		}
 		function replayVideo(){  
 			player.seekTo(0);
-			document.getElementById("cuewrap").innerHTML= " ";
-			document.getElementById("cue_chinese").innerHTML= " ";
+			document.getElementById("cuewrap").innerHTML= "";
+			//document.getElementById("cue_chinese").innerHTML= " ";
 			var place = document.getElementsByTagName("p");
 			for(var i=0;i<place.length;i++){
 				place[i].style.color = "black";
@@ -290,13 +290,13 @@
 					for(var i=0;i<place.length;i++){
 						place[i].style.color = "black";  //右邊歌詞全黑
 					}
-					document.getElementById("s{{lyric.order}}").style.color = "blue"; //當前歌詞以藍色顯示	
+					document.getElementById("{{lyric.order}}").style.color = "blue"; //當前歌詞以藍色顯示	
 					//console.log(mouse_enter);
 					if(({{lyric.order}}) && (mouse_enter==0)){
 						document.getElementById("content").scrollTop = imgTop_Array[{{lyric.order}}];
 					}	
 					//顯示影片下方字幕
-					sentence = document.getElementById("s{{lyric.order}}").innerHTML;
+					sentence = document.getElementById("{{lyric.order}}").innerHTML;
 					document.getElementById("cuewrap").innerHTML = sentence; //歌詞字幕(英文)
 					//chinese_words = "{{ lyric.pinyin }}";
 					//document.getElementById("cue_chinese").innerHTML = chinese_words; //中文字幕
@@ -316,7 +316,7 @@
 	var imgTop_Array = new Array();
 	var start_Array = new Array();
 	{% for i in lyrics %}	
-		imgTop_Array[{{i.order}}] = $("img#{{i.order}}").position().top - 300;
+		imgTop_Array[{{i.order}}] = $("p#{{i.order}}").position().top - 240;
 		start_Array[{{i.order}}] = {{i.start_time}};
 	{% endfor %}
 	$(document).ready(function() {
@@ -352,7 +352,7 @@
 			});				
 		});
 
-		$('img.move').click(function(){
+		$('.move').click(function(){
 			var get_imgID = $(this).attr('id');//等同於lyric.order
 			var imgTop_position = imgTop_Array[get_imgID];
 			$("#content").animate({
