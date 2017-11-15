@@ -56,7 +56,7 @@
 				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
 				{% endif %}
 				<div>					
-					<button type="button" class="btn-primary btn-block" onclick="signup_submit()">{% trans "Sign Up" %}</button>					
+					<button id="btn-submit" type="button" class="btn-primary btn-block" onclick="signup_submit()">{% trans "Sign Up" %}</button>					
 				</div>
 				<div style="text-align: center;">
 					<div class="my-error-msg"></div>
@@ -97,6 +97,11 @@
 			}
 		}
 
+		var btn_submit = document.getElementById("btn-submit");
+		btn_submit.innerHTML = '載入中...';
+		btn_submit.style.backgroundColor = '#B4D5FC';
+		btn_submit.style.borderColor = '#B4D5FC';
+		btn_submit.disabled = true;
 		form.submit();
 	}
 

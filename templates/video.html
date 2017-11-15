@@ -106,7 +106,11 @@
 					{% for i in show_comments %}
 						<div class="comment_item">
 							<div>
-								<img src="/media/{{ profile_imgs | get_item:i.user.username }}" style="width:36px; height: 36px">
+								{% if profile_imgs|get_item:i.user.username %}
+									<img src="/media/{{ profile_imgs | get_item:i.user.username }}" style="width:36px; height: 36px">
+								{% else %}
+									<img src="{% static 'images/皮卡丘.jpg'%}" style="width:36px; height: 36px">
+								{% endif %}
 								<strong><a href="/userinfo/{{ i.user.username }}">{{ i.user | capfirst }}</a></strong> 
 							</div>
 							<div style="padding: 0 40px 0 40px;">{{ i.content | linebreaks }}</div>
