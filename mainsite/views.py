@@ -273,10 +273,10 @@ def aftermodify(request):
 			Lid = request.POST.getlist('id')
 			count = len(lyricsText)
 
+			deleteL = Lyric.objects.filter(song=this_song)
+			deleteL.delete()
+
 			for i in range(count):
-				if Lid[i] !='-1':
-					Any = get_object_or_404(Lyric,id=Lid[i])    
-					Any.delete()
 				l = Lyric.objects.create(song=this_song, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
 				l.save()
 
