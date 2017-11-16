@@ -305,11 +305,18 @@
             insertLyrics(copyFrom,copyTo,copyBehind)
         }
 
-        function insertNoDetailsLyric(start,end,next){
+        function insertNoDetailsLyric(start,end,next,overlay,behind){
+            var overlayH;
             for(var i=start;i<=end;i++){
                 var content='';
                 var newDiv = document.createElement("div");
-                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0.0, 0.0, 1, 0, 0);
+                if (overlay==1 && i>behind){
+                    overlayH=i*2-start;
+                }
+                else{
+                    overlayH=i;
+                }
+                content += eachLyricDetail(document.getElementsByName('order')[overlayH].value, document.getElementsByName('ALText')[overlayH].value, document.getElementsByName('lyricsText')[overlayH].value, 0.0, 0.0, 1, 0, 0);
 
                 newDiv.setAttribute("class", "partLyricsDiv");
                 newDiv.innerHTML = content;
@@ -323,6 +330,10 @@
         }
 
         function insertLyrics(start,end,behind) {
+            var overlay=0;
+            if(behind>=start && behind<end){
+                overlay=1;
+            }
             var next=behind+8;
 
             var ceilingS=document.getElementsByName('sText')[behind].value;
@@ -332,15 +343,22 @@
             var deltaS;
             var delta;
             var ifTime;
+            var overlayH;
             
-
             for(var i=start;i<=end;i++){
                 if(ceilingE=='' || ceilingS==''){
-                    insertNoDetailsLyric(i,end,next);
+                    insertNoDetailsLyric(i,end,next,overlay,behind);
                     return;
                 }
 
-                var Start=document.getElementsByName('sText')[i].value;
+                if (overlay==1 && i>behind){
+                    overlayH=i*2-start;
+                }
+                else{
+                    overlayH=i;
+                }
+
+                var Start=document.getElementsByName('sText')[overlayH].value;
 
                 deltaS='';
                 ifTime=0;
@@ -349,7 +367,7 @@
                         deltaS=parseFloat(ceilingE)+0.3;
                     }
                     else if(i>start){
-                        var PreStart=document.getElementsByName('sText')[i-1].value;
+                        var PreStart=document.getElementsByName('sText')[overlayH-1].value;
                         if(!isNaN(PreStart)){
                             deltaS=parseFloat(Start)-parseFloat(PreStart);
                             deltaS=parseFloat(ceilingS)+deltaS;}
@@ -361,12 +379,12 @@
                     deltaS=deltaS.toFixed(1);
                 }
                 else{
-                    insertNoDetailsLyric(i,end,next);
+                    insertNoDetailsLyric(i,end,next,overlay,behind);
                     return;
                 }
                 
                 var content='';
-                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, '', ifTime, 0);
+                content += eachLyricDetail(document.getElementsByName('order')[overlayH].value, document.getElementsByName('ALText')[overlayH].value, document.getElementsByName('lyricsText')[overlayH].value, deltaS, '', ifTime, 0);
 
                 var newDiv = document.createElement("div");
                 newDiv.setAttribute("class", "partLyricsDiv");

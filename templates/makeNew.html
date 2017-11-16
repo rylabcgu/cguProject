@@ -584,15 +584,23 @@
             insertLyrics(copyFrom,copyTo,copyBehind,ifAL)
 		}
 
-		function insertNoDetailsLyric(start,end,next,ifAL){
+		function insertNoDetailsLyric(start,end,next,ifAL,overlay,behind){
+			var overlayH;
 			for(var i=start;i<=end;i++){
         		var content='';
         		var newDiv = document.createElement("div");
+        		if (overlay==1 && i>behind){
+                	overlayH=i*2-start;
+                }
+                else{
+                	overlayH=i;
+                }
+                console.log(overlayH)
 				if(ifAL==1){
-					content += eachLyricDetail(document.getElementsByName(0, 'order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0, 0, 1, 0, 0);
+					content += eachLyricDetail(document.getElementsByName('order')[overlayH].value, document.getElementsByName('ALText')[overlayH].value, document.getElementsByName('lyricsText')[overlayH].value, 0, 0, 1, 0, 0);
 				}
 				else{
-					content += eachLyricDetail(document.getElementsByName(0, 'order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, 0, 0, 0, 0, 0);
+					content += eachLyricDetail(document.getElementsByName('order')[overlayH].value, 0, document.getElementsByName('lyricsText')[overlayH].value, 0, 0, 0, 0, 0);
 				}
 
                 newDiv.setAttribute("class", "partLyricsDiv");
@@ -607,12 +615,18 @@
 		}
 
         function insertLyrics(start,end,behind,ifAL) {
-            var next=behind+7;
-
+            var overlay=0;
+            if(behind>=start && behind<end){
+            	overlay=1;
+            }
+            var next=behind+8;
+            
             if(start==0){
-            	insertNoDetailsLyric(start,end,next,ifAL);
+            	insertNoDetailsLyric(start,end,next,ifAL,overlay,behind);
             	return;
             }
+            //從第一句開始copy沒有時間差好算
+
             var ceilingS=document.getElementsByName('sText')[behind].value;
             var ceilingE=document.getElementsByName('eText')[behind].value;
 
@@ -620,16 +634,24 @@
             var deltaS;
             var delta;
             var ifTime;
+            var overlayH;
             
-
             for(var i=start;i<=end;i++){
                 if(ceilingE=='' || ceilingS==''){
-                	insertNoDetailsLyric(i,end,next,ifAL);
+                	insertNoDetailsLyric(i,end,next,ifAL,overlay,behind);
                 	return;
                 }
-
-                var Start=document.getElementsByName('sText')[i].value;
-                var End=document.getElementsByName('eText')[i].value;
+                //若上一句歌詞沒有給清楚時間資訊，沒有時間差好算
+                
+                if (overlay==1 && i>behind){
+                	overlayH=i*2-start;
+                }
+                else{
+                	overlayH=i;
+                }
+                console.log(overlayH)
+                var Start=document.getElementsByName('sText')[overlayH].value;
+                var End=document.getElementsByName('eText')[overlayH].value;
                 delta=parseFloat(End)-parseFloat(Start);
                 deltaS='';
                 deltaE='';
@@ -640,7 +662,7 @@
                 	deltaE=deltaS+delta;
                 }
                 else if(Start!=''){
-                	var PreStart=document.getElementsByName('sText')[i-1].value;
+                	var PreStart=document.getElementsByName('sText')[overlayH-1].value;
                 	if(PreStart!='' && ceilingS!=''){
                 		deltaS=parseFloat(Start)-parseFloat(PreStart);
                 		deltaS=parseFloat(ceilingS)+deltaS;
@@ -658,10 +680,10 @@
 
                 var content='';
 				if(ifAL==1){
-					content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 1, ifTime, 0);
+					content += eachLyricDetail(document.getElementsByName('order')[overlayH].value, document.getElementsByName('ALText')[overlayH].value, document.getElementsByName('lyricsText')[overlayH].value, deltaS, deltaE, 1, ifTime, 0);
 				}
 				else{
-					content += eachLyricDetail(document.getElementsByName('order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, deltaS, deltaE, 0, ifTime, 0);
+					content += eachLyricDetail(document.getElementsByName('order')[overlayH].value, 0, document.getElementsByName('lyricsText')[overlayH].value, deltaS, deltaE, 0, ifTime, 0);
 				}
 
 				var newDiv = document.createElement("div");
@@ -672,6 +694,7 @@
 
                 parent.insertBefore(newDiv, parent.children[next]);
                 next++;
+ 
                 ceilingS=deltaS;
                 ceilingE=deltaE;
             }
