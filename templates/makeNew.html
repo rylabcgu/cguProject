@@ -1,18 +1,17 @@
 {% extends 'base.html' %}
-
+{% load staticfiles %}
 {% block head_title %} 歌曲製作 {% endblock %}
 
 {% block content %}
-	{% load staticfiles %}
 	{% if request.user.is_authenticated %}
 		<div class="row" id="initDiv">
 			<div class="col-md-8 offset-md-2">
 				<div class="my-block" style="padding: 40px 40px 40px 40px">
 					<div id="urlInput">
 						<label>輸入Youtube URL：
-							<input size="40" class="my-line-text" type="text" name="yturl">
+							<input size="40" class="my-line-text" type="text" name="yturl" data-toggle="tooltip" data-placement="bottom" title="沒有YouTube影片的網址，就無法製作歌曲喔~" >
 						</label><br><br>
-						<button class="btn-primary" onclick="getYTVideo()">開始</button>
+						<button class="btn-primary" onclick="getYTVideo() ">開始</button>
 					</div>
 				</div>
 			</div>
@@ -28,30 +27,21 @@
 			</div>
 			<div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px"></div>
 			</div>
-		</div>
-		<div class="container">
-			<a data-toggle="modal" data-target="#myModal">需要幫助嗎?</a>
-			<div class="modal fade" id="myModal" role="dialog">
-			    <div class="modal-dialog">
-			      <div class="modal-content">
-			        <div class="modal-body">
-			          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-			          <img id="imageresource" src="{% static 'images/green.png' %}" style="width: 400px; height: 264px;">
-			        </div>
-			      </div>
-			    </div>
-			  </div>
-		</div>
+		</divs>
+
 	{% else %}
 		<script type="text/javascript">
 			window.location.href = '/accounts/login'
 		</script>>
 	{% endif %}
-
-	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-	{% load staticfiles %}
 		<script src="{% static '/js/jquery.cookie.js' %}" type="text/javascript"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
 	<script type="text/javascript">
+
+		$(function(){
+    		$('body').tooltip({ selector: '[data-toggle="tooltip"]', delay:{hide:800} });
+		});
+
 		var tag = document.createElement('script');
 		tag.src = "https://www.youtube.com/iframe_api";
 		var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -80,8 +70,8 @@
 			
 			btnDiv.setAttribute("class", "my-block");
 			lyricsDiv.setAttribute("class", "my-block");
-		 	form_main.innerHTML = "<textarea class='my-textarea' id='totalLyrics' rows='20' cols='45%' placeholder='請輸入台文歌詞'></textarea><textarea class='my-textarea' id='totalALLyrics' rows='20' cols='45%' placeholder='請輸入羅馬拼音歌詞'></textarea>";
-		 	btnDiv.innerHTML = "<button  class='btn-primary' onclick='seperate()'>台文與羅馬拼音分離</button><button class='btn-primary' onclick='cutLyrics()'>下一步</button>";
+		 	form_main.innerHTML = "<textarea class='my-textarea' id='totalLyrics' rows='20' cols='45%' placeholder='請輸入台文歌詞' data-toggle='tooltip' data-placement='left' title='小撇部:一句歌詞不要太長，呈現時會更美觀'></textarea><textarea class='my-textarea' id='totalALLyrics' rows='20' cols='45%' placeholder='請輸入羅馬拼音歌詞' data-toggle='tooltip' data-placement='right' title='沒有注音也沒關西，後面步驟有提供自動注音的服務'></textarea>";
+		 	btnDiv.innerHTML = "<button class='btn-primary' data-toggle='tooltip' data-placement='top' title='在台文的方框中放台羅夾雜(行為單位)的歌詞，會智慧為你分離' onclick='seperate()'>台文與羅馬拼音分離</button><button class='btn-primary' onclick='cutLyrics()'>下一步</button>";
 		 	var element = document.getElementById("initDiv");
 			element.parentNode.removeChild(element);
 			document.getElementById("totalLyrics").focus();
@@ -108,37 +98,6 @@
 				return vid;
 			}
 		}
-
-
-/*
-		$(document).ready(function(){
-			$(window).scroll(function() {
-				if ($(document).scrollTop() > 200) {
-					alert($(document).scrollTop())
-				}
-			});
-		});
-		$(document).ready(function() {
-			$('#player').scrollToFixed();
-		});
-
-		function getPosition (element) {
-			var x = 0;
-			var y = 0;
-			while ( element ) {
-				x += element.offsetLeft - element.scrollLeft + element.clientLeft;
-				y += element.offsetTop - element.scrollLeft + element.clientTop;
-				element = element.offsetParent;
-				console.log('element.offsetLeft: '+element.offsetLeft)
-				console.log('element.scrollLeft: '+element.scrollLeft)
-				console.log('element.clientLeft: '+element.clientLeft)
-				console.log('element.offsetTop: '+element.offsetTop)
-				console.log('element.scrollLeft: '+element.scrollLeft)
-				console.log('element.clientTop: '+element.clientTop)
-				}
-			console.log(x+','+y)
-			
-			}*/
 
 		function TimeCaculate(){
 			var NowDate=new Date();
@@ -253,7 +212,7 @@
 
 			else if(all_ALlyrics==""){
 				content+=DisplayNoAL(all_lyrics);
-				btnDiv.innerHTML = '從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph(0)"><br><br>全部歌詞開始時間平移<input type ="text" name="ShiftUnit" size="1">秒<input class="btn-primary" type ="button" value ="GO!" onclick = "Shift()"><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="arrange(1)">增加羅馬拼音</button><button class="btn-primary" onclick="arrange(0)">直接提交</button>';
+				btnDiv.innerHTML = '從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph(0)" data-toggle="tooltip" data-placement="right" title="副歌重複又不想重打一次?按下GO!為你複製整段歌詞~"><br><br>全部歌詞開始時間平移<input type ="text" name="ShiftUnit" size="1">秒<input class="btn-primary" type ="button" value ="GO!" onclick = "Shift()"><br><br><button class="btn-primary" onclick="markCurrent()" data-toggle="tooltip" data-placement="left" title="歌曲從頭撥放，歌詞會在你設定的時間內亮起">循序播放</button><button class="btn-primary" onclick="arrange(1)" data-toggle="tooltip" data-placement="top" title="手動新增注音，我們提供了四種不同的自動注音種類給你參考喔~">增加羅馬拼音</button><button class="btn-primary" onclick="arrange(0)" data-toggle="tooltip" data-placement="right" title="我們會為這首歌自動注音，你隨時都可以在修改~">直接提交</button>';
 			}	//沒有羅馬拼音，下一步檢查時間，再下一步判斷是否要注音，再下一步再判斷是否需要自動注音的輔助
 			else if(all_lyrics.length !== all_ALlyrics.length){
 				window.alert('行數不對');
@@ -261,7 +220,7 @@
 			}
 			else{
 				content+=DisplayWithAL(all_lyrics,all_ALlyrics);
-				btnDiv.innerHTML = '從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph(0)"><br><br>全部歌詞開始時間平移<input type ="text" name="ShiftUnit" size="1">秒<input class="btn-primary" type ="button" value ="GO!" onclick = "Shift()"><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="arrange(2)">提交</button>';
+				btnDiv.innerHTML = '從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph(0)" data-toggle="tooltip" data-placement="right" title="副歌重複又不想重打一次?按下GO!為你複製整段歌詞~"><br><br>全部歌詞開始時間平移<input type ="text" name="ShiftUnit" size="1">秒<input class="btn-primary" type ="button" value ="GO!" onclick = "Shift()"><br><br><button class="btn-primary" onclick="markCurrent()" data-toggle="tooltip" data-placement="left" title="歌曲從頭撥放，歌詞會在你設定的時間內亮起">循序播放</button><button class="btn-primary" onclick="arrange(2)" data-toggle="tooltip" data-placement="right" title="之後會有修正介面，讓你做小幅度的修改">提交</button>';
 			}	//有給羅馬拼音且行數正確，直接讓他作好時間點就可以提交
 			content +='<br>';
 
@@ -271,7 +230,13 @@
 			form_main.innerHTML = content;
 			
 			document.getElementsByName("sText")[0].focus();
-
+			if(all_ALlyrics.length!=0){
+				setTooltip(1);
+			}
+			else{
+				setTooltip(0);
+			}
+			
 		}
 
 		function DisplayNoAL(all_lyrics){
@@ -307,25 +272,27 @@
 			}
 			content += '<input type="text" name="lyricsText" value="' + lyric + '" size="30">';
 			if(withTime==1){
-				content +='<input type="text" name="sText" size="5" placeholder="開始" value="' + start + '">' +
+				content +='<input type="text" name="sText" size="5" placeholder="開始" value="' + start + '" >' +
 					      '<input type="text" name="eText" size="5" placeholder="結束" value="' + end + '">' ;
 			}
 			else{
 				content +='<input type="text" name="sText" size="5" placeholder="開始">' +
-					      '<input type="text" name="eText" size="5" placeholder="結束">' ;
+				      '<input type="text" name="eText" size="5" placeholder="結束">' ;
 			}					   
 			content += '<span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>';
 			if(withAL==1){
 				content += '<span class="clickable-words" onclick="insertPartLyrics(1,0)" tabindex="0">插入</span>'+
-							'<span class="clickable-words" onclick="insertPartLyrics(1,1)" tabindex="0">間奏</span>';
+						'<span class="clickable-words" onclick="insertPartLyrics(1,1)" tabindex="0">間奏</span>';				
 			}
 			else{
 				content += '<span class="clickable-words" onclick="insertPartLyrics(0,0)" tabindex="0">插入</span>'+
-							'<span class="clickable-words" onclick="insertPartLyrics(0,1)" tabindex="0">間奏</span>';
+						'<span class="clickable-words" onclick="insertPartLyrics(0,1)" tabindex="0">間奏</span>';
+				
 			}
 			if(insert==1){
 				content += '</div>';
 			}
+
 			return content;
 		}
 
@@ -399,7 +366,7 @@
 				}
 
 				var btnDiv = document.getElementById("btnDiv");
-				btnDiv.innerHTML = '<select id="TypeofAL"><option value=1>臺羅數字調</option><option value=0>臺羅閏號調</option><option value=2>吳守禮方音</option></select><button class="btn-primary" onclick="auto(1)">自動注音</button><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="submit()">提交</button>';
+				btnDiv.innerHTML = '<select id="TypeofAL"><option value=1>臺羅數字調</option><option value=0>臺羅閏號調</option><option value=2>吳守禮方音</option><option value=3>通用數字調</option></select><button class="btn-primary" onclick="auto(1)" data-toggle="tooltip" data-placement="right" title="先選定自動注音種類再按下~">自動注音</button><br><br><button class="btn-primary" onclick="markCurrent()">循序播放</button><button class="btn-primary" onclick="submit()">提交</button>';
 			}
 			else if(msg==0){
 				auto(0);
@@ -408,6 +375,21 @@
 				submit();
 			}
 			
+		}
+
+		function setTooltip(ifAL){
+			var list=document.getElementsByClassName("partLyricsDiv");
+			ifAL=parseInt(ifAL);
+			for(var i=0; i<8; i++){
+				if(i==2+ifAL || i==3+ifAL || i==6+ifAL){
+					list[0].children[i].setAttribute("data-toggle","tooltip");
+					list[0].children[i].setAttribute("data-placement","top");
+				}
+			}
+			list[0].children[6+ifAL].setAttribute("title","適時插入間奏會使這首歌更方便學習喔~");
+			list[0].children[3+ifAL].setAttribute("title","小撇部: 只要輸入最後一句的就可以了~");
+			list[0].children[2+ifAL].setAttribute("title","按下空白鍵會顯示目前影片時間，並會自動跳到下一格喔~");
+			console.log(list[0].children)
 		}
 
 		var repeat;
@@ -584,9 +566,11 @@
 
 		function ReOrder(){
 			var ORs = document.getElementsByName("order");
+			var list=document.getElementsByClassName("partLyricsDiv");
 			for(var i=0; i<ORs.length;i++){
 				ORs[i].value=i+1;
 			}
+
 		}
 		
 		function copyParagraph(ifAL){
@@ -605,10 +589,10 @@
         		var content='';
         		var newDiv = document.createElement("div");
 				if(ifAL==1){
-					content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0, 0, 1, 0, 0);
+					content += eachLyricDetail(document.getElementsByName(0, 'order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0, 0, 1, 0, 0);
 				}
 				else{
-					content += eachLyricDetail(document.getElementsByName('order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, 0, 0, 0, 0, 0);
+					content += eachLyricDetail(document.getElementsByName(0, 'order')[i].value, 0, document.getElementsByName('lyricsText')[i].value, 0, 0, 0, 0, 0);
 				}
 
                 newDiv.setAttribute("class", "partLyricsDiv");

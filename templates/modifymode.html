@@ -9,11 +9,11 @@
                     <form method="post" action="/aftermodify/">
                         {% csrf_token %}
                         <div id="form-main">
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Title: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title", size=50 placeholder="歌曲"  value={{song.title}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Singer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer", size=50 placeholder="歌手"  value={{song.singer}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Composer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer", size=50 placeholder="作曲" value={{song.composer}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Lyricist: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
-                            <input type="hidden" name="producer" value="{{song.uploader}}">
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Title: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title" size=50 placeholder="歌曲"  value={{song.title}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Singer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer" size=50 placeholder="歌手"  value={{song.singer}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Composer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer" size=50 placeholder="作曲" value={{song.composer}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Lyricist: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist" size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">YouTubeURL: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="videoURL" size=50 placeholder="輸入影片完整網址" value={{song.videoURL}}></div><button type="button" class="btn-primary" onclick="changeVideo()">更換</button></div>
                             <input type="hidden" name="SongID" value={{song.songID}}>
                             <input type="hidden" name="IfDelete" id="IfDelete" value="0">
                             {% for lyric in lyrics %}
@@ -56,6 +56,41 @@
                 width: '560',
                 videoId:'{{song.videoURL}}',
                 });
+        }
+
+        function changeVideo(){
+            var url=document.getElementsByName("videoURL")[0].value;
+            console.log(url)
+            url=getVidFromUrl(url);
+            if(url==false){
+                return;
+            }
+            player.loadVideoById({
+                'videoId': url,
+               'startSeconds': 0,
+               'suggestedQuality': 'large'});
+            document.getElementsByName("videoURL")[0].value=url;
+        }
+
+        function getVidFromUrl(url) {
+            if(url.match(/youtube/g) == null){
+                alert("請輸入正確YouTube的網址");
+                return false;
+            }
+            var vid = url.split("/")[3];
+            if(vid.match("v=")) {
+                vid = vid.split("v=")[1];
+                if(vid.match("&")) {
+                    vid = vid.split("&")[0];
+                    return vid;
+                }
+                else {
+                    return vid;
+                }
+            }
+            else {
+                return vid;
+            }
         }
 
         function getVideoTimeFromSpace() {
@@ -106,7 +141,7 @@
                 content += eachLyricDetail(0, '', '(間奏~)', start, '', 1, 0);
             }
             else{
-                    content += eachLyricDetail(0, '', '', 0, 0, 0, 0);
+                    content += eachLyricDetail(0, '', '', 0.0, 0.0, 0, 0);
             }
 
             newDiv.setAttribute("class", "partLyricsDiv");
@@ -224,20 +259,29 @@
             var text = document.activeElement.parentElement.children[2];
             var start = document.activeElement.parentElement.children[3].value;
             var end = document.activeElement.parentElement.children[4].value;
-
-            text.style.color="green";
-
-            if(parseInt(start)) {
-                start = parseFloat(start);
-                end = parseFloat(end);
+            
+            start = parseFloat(start);
+            end = parseFloat(end);
+            if(isNaN(start) || isNaN(end)){
+                alert('請輸入正確的時間資訊')
+                return;
+            }
+            if(end>start) {
+                text.style.color="green";
                 player.seekTo(start);
                 repeat = setInterval(function(){
+                    console.log('1')
                     var sec = Math.round(player.getCurrentTime()*10)/10;
                     if(sec>end){
                         player.seekTo(start);
                     }
                     },100);
                 }
+            else{
+                alert('請輸入正確的時間資訊')
+                return;
+            }
+            console.log('2')
         }
 
         function clear(){
@@ -265,7 +309,7 @@
             for(var i=start;i<=end;i++){
                 var content='';
                 var newDiv = document.createElement("div");
-                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0, 0, 1, 0, 0);
+                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, 0.0, 0.0, 1, 0, 0);
 
                 newDiv.setAttribute("class", "partLyricsDiv");
                 newDiv.innerHTML = content;
@@ -297,8 +341,7 @@
                 }
 
                 var Start=document.getElementsByName('sText')[i].value;
-                //var End=document.getElementsByName('eText')[i].value;
-                //delta=parseFloat(End)-parseFloat(Start);
+
                 deltaS='';
                 ifTime=0;
                 if(parseFloat(ceilingE)>0.3){
@@ -312,18 +355,6 @@
                             deltaS=parseFloat(ceilingS)+deltaS;}
                     } 
                 }
-                /*
-                if(!isNaN(delta)){
-                    deltaS=parseFloat(ceilingE)+0.3;
-                    //deltaE=deltaS+delta;
-                }
-                else if(Start!='' && i!=0){
-                    var PreStart=document.getElementsByName('sText')[i-1].value;
-                    if(PreStart!='' && ceilingS!=''){
-                        deltaS=parseFloat(Start)-parseFloat(PreStart);
-                        deltaS=parseFloat(ceilingS)+deltaS;
-                    }
-                }*/
 
                 if(deltaS>0){
                     ifTime=1;
@@ -335,7 +366,7 @@
                 }
                 
                 var content='';
-                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, '', 1, ifTime, 0);
+                content += eachLyricDetail(document.getElementsByName('order')[i].value, document.getElementsByName('ALText')[i].value, document.getElementsByName('lyricsText')[i].value, deltaS, '', ifTime, 0);
 
                 var newDiv = document.createElement("div");
                 newDiv.setAttribute("class", "partLyricsDiv");
@@ -348,7 +379,6 @@
                 
                 ceilingS=deltaS;
             }
-            
             ReOrder();
         }
         
@@ -378,8 +408,8 @@
             /*                      
             content += '<span class="clickable-words" onclick="insertPartLyrics(1,0)" tabindex="0">插入</span>'+*/
             content+='<input type="hidden" name="id" value="-1" size="5">'+
-                     '<span class="clickable-words" onclick="seekVideoTime()" tabindex="0">單句循環</span>'+
-                     '<span class="clickable-words" onclick="Interlude()" tabindex="0">間奏</span>'+
+                     '<span class="clickable-words" onclick="seekVideoTime()" tabindex="0">Play</span>'+
+                     '<span class="clickable-words" onclick="insertPartLyrics(1)" tabindex="0">間奏</span>'+
                      '<span class="clickable-words" onclick="delPartLyrics()" tabindex="0">刪除</span>';
 
             if(insert==1){
@@ -413,12 +443,10 @@
         function submit(check){
             if(check==0){
                 var form = document.getElementsByTagName("form")[1];
-                //console.log(form)
-                //console.log(document.getElementById('IfDelete').value)
                 form.submit();
             }
             else{
-                 ReOrder();
+                ReOrder();
                 if(arrange()==false){
                     return;
                 }

@@ -100,11 +100,14 @@ def autoAL(request):
 				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅數字調']
 			elif typeofAL=='0':
 				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['臺羅閏號調']
-			else:
+			elif typeofAL=='2':
 				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['吳守禮方音']
+			else:
+				data1 = json.loads(data1.decode('utf-8'))['綜合標音'][0]['通用數字調']
 			
 			tmpL.append(data1)
 			return HttpResponse(tmpL)
+
 
 def video(request, id):
 	template = "video.html"
@@ -254,11 +257,14 @@ def aftermodify(request):
 		singer = request.POST['singer']
 		composer = request.POST['composer']
 		lyricist = request.POST['lyricist']
+		videoURL = request.POST['videoURL']
 		this_song = Song.objects.get(songID=request.POST['SongID'])
+		
 		if delete !='0':
 			this_song.delete()
 			return HttpResponseRedirect('/songlist/2/')
 		else:
+			Song.objects.filter(songID=request.POST['SongID']).update(singer=singer, composer=composer, lyricist=lyricist, title=title, videoURL=videoURL)
 			order = request.POST.getlist('order')
 			lyricsText = request.POST.getlist('lyricsText')
 			ALText = request.POST.getlist('ALText')
