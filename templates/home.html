@@ -11,28 +11,24 @@
 	<link rel="icon" href="http://getbootstrap.com/favicon.ico">
     <!-- Bootstrap core CSS -->
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Custom styles for this template -->
-    <link href="http://getbootstrap.com/docs/4.0/examples/carousel/carousel.css" rel="stylesheet">
+    <link href="/static/carousel.css" rel="stylesheet">
 </head>
 
 <body>
 <header>
 	<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-		<a class="navbar-brand" href="/">台語Song啦</a>
+		<a class="navbar-brand" href="/index"><img alt="brand" src="{% static 'images/台語Song啦1.0.png' %}" height="40"></a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 		<div class="collapse navbar-collapse" id="navbarCollapse">
 			<ul class="navbar-nav mr-auto">
 				<li class="nav-item active">
-					<a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+					<a class="nav-link" href="/accounts/signup">Sign Up<span class="sr-only">(current)</span></a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#">Link</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link disabled" href="#">Disabled</a>
+					<a class="nav-link" href="/accounts/login">Login</a>
 				</li>
 			</ul>
 			<form class="form-inline mt-2 mt-md-0">
@@ -55,9 +51,8 @@
 			<img class="first-slide" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="First slide">
 			<div class="container">
 				<div class="carousel-caption text-left">
-					<h1>註冊</h1>
-					<p>我覺得你註冊比較好</p>
-					<p><a class="btn btn-lg btn-primary" href="/accounts/signup/" role="button">Sign up today</a></p>
+					<h1>台語Song啦網站</h1>
+					<p>一個適合所有人學習台語的影音平台</p>
 				</div>
 			</div>
 		</div>
@@ -65,9 +60,9 @@
 		<img class="second-slide" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Second slide">
 			<div class="container">
 				<div class="carousel-caption">
-					<h1>第二頁</h1>
-					<p>就只是第二頁</p>
-					<p><a class="btn btn-lg btn-primary" href="#" role="button">Learn more</a></p>
+					<h1>註冊</h1>
+					<p>方便、快速、免費</p>
+					<p><a class="btn btn-lg btn-primary" href="/accounts/signup" role="button">立即註冊</a></p>
 				</div>
 			</div>
 		</div>
@@ -75,9 +70,9 @@
 		<img class="third-slide" src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Third slide">
 			<div class="container">
 				<div class="carousel-caption text-right">
-					<h1>來試試吧</h1>
-					<p>給我來試喔</p>
-					<p><a class="btn btn-lg btn-primary" href="/index/" role="button">Browse gallery</a></p>
+					<h1>更多功能</h1>
+					<p>還有許多功能等著你來發現！</p>
+					<p><a class="btn btn-lg btn-primary" href="/index" role="button">進入網站</a></p>
 				</div>
 			</div>
 		</div>
@@ -92,11 +87,12 @@
 	</a>
 </div>
 
-<!-- FOOTER -->
+<!-- FOOTER 
 <footer class="container">
 <p class="float-right"><a href="#">Back to top</a></p>
 <p>&copy; 2017 rylabcgu &middot; <a href="#">Privacy</a> &middot; <a href="#">Terms</a></p>
 </footer>
+-->
 
 </main>
 
