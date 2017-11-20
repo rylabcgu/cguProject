@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
 
+{% load page_tags %}
+
 {% block head_title %} 歌曲列表 {% endblock %}
 
 {% block content %}
 <div class="row">
 	<div class="col-md-8 offset-md-2">
+		<span style="font-size:24px;">影片結果如下：</span>
 		<div class="my-block">
 			{% for s in songs %}
 			<div class="row" style="padding: 5px 5px 5px 5px;">
@@ -41,8 +44,10 @@
 					{% for page_number in songs.paginator.page_range %}
 						{% if page_number == songs.number %}
 							{{ page_number }}
-						{% else %}
+						{% elif page_number|show_page:songs.number %}
 							<a href="?page={{ page_number }}">{{ page_number }}</a>
+						{% else %}
+							.
 						{% endif %}
 					{% endfor %}
 				</span>

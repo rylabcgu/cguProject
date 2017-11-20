@@ -31,6 +31,9 @@ def index(request):
 	
 	song_list1 = Song.objects.all().order_by('-uploadTime')[:5]
 	song_list2 = Song.objects.all().order_by('-viewNumber')[:5]
+	song_list3 = Song.objects.filter(pinyinType=0).order_by('-uploadTime')[:5]
+	song_list4 = Song.objects.filter(pinyinType=1).order_by('-uploadTime')[:5]
+	song_list5 = Song.objects.filter(pinyinType=2).order_by('-uploadTime')[:5]
 		
 	args['song_list1'] = song_list1
 	args['song_list2'] = song_list2
@@ -364,10 +367,16 @@ def songlist(request, id):
 		song_list = Song.objects.all().order_by('-uploadTime')
 	elif id == "2":
 		song_list = Song.objects.all().order_by('-viewNumber')
+	elif id == "3":
+		song_list = Song.objects.filter(pinyinType=0)
+	elif id == "4":
+		song_list = Song.objects.filter(pinyinType=1)
+	elif id == "5":
+		song_list = Song.objects.filter(pinyinType=2)
 	else:
 		song_list = 87
 	
-	paginator = Paginator(song_list, 5)
+	paginator = Paginator(song_list, 10)
 	page = request.GET.get('page')
 	try:
 		songs = paginator.page(page)
