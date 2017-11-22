@@ -11,14 +11,16 @@
 			<div id="videoDiv" style="width:100%;background-color: #000000;">
 				<div id="player"></div> <!-- 影片的位置 -->
 				<div id="cuewrap"></div> <!-- 放字幕的地方 -->
-				<!--<b><div id="cue_chinese"></div></b>-->
+				<div id="cuewrap_pinyin"></div>
+				<div id="cuewrap_text"></div>
 				<div>
 					<br><br><br><br><br>
 					<!--<button onclick="playVideo();">播放</button>
 					<button onclick="pauseVideo();">暫停</button>-->
 					<button onclick="replayVideo();">重頭播放</button>	
+					<button id="both_present" onclick="both_present();">字幕+拼音</button>
+					<button id="pinyin_present" onclick="pinyin_present();">拼音</button>
 					<button id="text_word" onclick="text_present();">字幕</button>
-					<!--<button id="ch" onclick="CH();">拼音</button>-->
 					<span id="timer" style="background-color:black;color:yellow;"></span><br>
 				</div>
 			</div>
@@ -190,7 +192,7 @@
 						}
 						else{
 							//console.log(check_num);
-							document.write("<ruby style='font-size: 150%;'><rb>"+text+"</rb><rt>"+pinyin+"</rt></ruby>&ensp;");
+							document.write("<ruby style='font-size: 150%;'><rb id='text_{{lyric.order}}'>"+text+"</rb><rt id='pinyin_{{lyric.order}}'>"+pinyin+"</rt></ruby>&ensp;");
 						}	
 						  document.write("</p></td></tr></table>");
 						{% endfor %}
@@ -208,13 +210,15 @@
 	$.ajaxSetup({
 	  data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
 	});
+	var current_time;
+	var all_time;
 	var player;
 	var tag = document.createElement('script');
 	tag.src = "https://www.youtube.com/player_api";
 	var firstScriptTag = document.getElementsByTagName('script')[0];
-	var sentence = "";
+	var switcher_both = 0;
 	var switcher_textword = 0;
-	var switcher_ch = 0;
+	var switcher_pinyin = 0;
 	var switcher_good = 0;
 	var switcher_bad = 0;
 	var youtube_id = "{{ song.videoURL }}";	
@@ -230,6 +234,23 @@
 	{% else %}
 		isLike = false;
 	{% endif %}	
+	//subTitle: ruby處理好的字
+	//textArray: 切割好台語字
+	var subTitle = new Array();
+	var textArray = new Array();
+	var x, rb_text;
+	var string_x = "";
+	{% for lyric in lyrics %}
+		x = document.getElementById("{{lyric.order}}");
+		subTitle[{{lyric.order}}] =x.innerHTML;
+		rb_text = x.getElementsByTagName("rb");
+		for(var i=0;i<rb_text.length;i++){ //取得rb標籤台羅字+空格切開表示
+			string_x += " "+rb_text[i].innerHTML;
+		}
+		//console.log(string_x);
+		textArray[{{lyric.order}}] = string_x;
+		string_x = "";
+	{% endfor %}
 	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 	  function onYouTubeIframeAPIReady() {
 		player = new YT.Player('player', {
@@ -243,6 +264,11 @@
 	  }
 		function onPlayerReady(){
 			setInterval(getPlayStatus,500); 
+			document.getElementById("both_present").style.color = "red";
+			document.getElementById("pinyin_present").style.color = "black";
+			document.getElementById("cuewrap_pinyin").style.color = "black";
+			document.getElementById("text_word").style.color = "black";//按鈕初始顏色
+			document.getElementById("cuewrap_text").style.color = "black"; //字幕初始顏色
 			//document.getElementById("cuewrap").innerHTML = "歡迎來到講台語學習平台!!!";	
 		}
 		function playVideo(){
@@ -254,58 +280,100 @@
 		function replayVideo(){  
 			player.seekTo(0);
 			document.getElementById("cuewrap").innerHTML= "";
-			//document.getElementById("cue_chinese").innerHTML= " ";
-			var place = document.getElementsByTagName("p");
-			for(var i=0;i<place.length;i++){
-				place[i].style.color = "black";
+			document.getElementById("cuewrap_pinyin").innerHTML= "";
+			document.getElementById("cuewrap_text").innerHTML= "";
+			var pNum = document.getElementsByTagName("p");
+			var subNum = document.getElementsByClassName("move");
+			for(var i=0;i<subNum.length;i++){
+				subNum[i].style.color = "black";  //右邊歌詞全黑
 			}
 			player.playVideo();	
+		}
+		function both_present(){
+			switcher_both = switcher_both==0?1:0;
+			if(switcher_both==0){ 
+				document.getElementById("both_present").style.color = "red";//按鈕初始顏色
+				document.getElementById("cuewrap").style.color = "white"; //字幕初始顏色
+			}
+			else{
+				document.getElementById("both_present").style.color = "black"; 
+				document.getElementById("cuewrap").style.color = "black";
+			}		
 		}
 		function text_present(){
 			switcher_textword = switcher_textword==0?1:0;
 			if(switcher_textword==0){ 
 				document.getElementById("text_word").style.color = "black";//按鈕初始顏色
-				document.getElementById("cuewrap").style.color = "white"; //字幕初始顏色
+				document.getElementById("cuewrap_text").style.color = "black"; //字幕初始顏色
 			}
 			else{
 				document.getElementById("text_word").style.color = "red"; 
-				document.getElementById("cuewrap").style.color = "black";
+				document.getElementById("cuewrap_text").style.color = "white";
 			}		
 		}
-		function CH(){
-			switcher_ch = switcher_ch==0?1:0;
-			if(switcher_ch==0){ 
-				document.getElementById("ch").style.color = "black";
-				document.getElementById("cue_chinese").style.color = "white";
+		function pinyin_present(){
+			switcher_pinyin = switcher_pinyin==0?1:0;
+			if(switcher_pinyin==0){ 
+				document.getElementById("pinyin_present").style.color = "black";
+				document.getElementById("cuewrap_pinyin").style.color = "black";
 			}
 			else{
-				document.getElementById("ch").style.color = "red";
-				document.getElementById("cue_chinese").style.color = "black";
+				document.getElementById("pinyin_present").style.color = "red";
+				document.getElementById("cuewrap_pinyin").style.color = "white";
 			}	
 		}
+		function subtitle(order){
+			document.getElementById("cuewrap").style.color = "white";
+			document.getElementById("cuewrap").innerHTML = subTitle[order];
+		} 
+		//歌曲中間時間差>2秒沒有字幕時的處理
+		var pNum = document.getElementsByTagName("p");
+		var subNum = document.getElementsByClassName("move").length;
+		var stArray = new Array();
+		var etArray = new Array();
+		var black_stArray = new Array();
+		var black_etArray = new Array();
+		var blackplace = 0;
+		stArray[0] = 0;
+		etArray[0] = 0;
+		{% for lyric in lyrics %}
+			stArray[{{lyric.order}}] = {{ lyric.start_time }};
+			etArray[{{lyric.order}}] = {{ lyric.end_time }};
+		{% endfor %}
+		for(var i=1 ; i<=subNum ; i++){
+			var x = stArray[i+1] - etArray[i];
+			if( x > 2){
+				black_stArray[blackplace] = etArray[i];
+				black_etArray[blackplace] = stArray[i+1];
+				blackplace++; 
+			}
+		}
+		////////////////////////////////////////
 		function getPlayStatus() {
-			var current_time = player.getCurrentTime().toFixed(2);
-			var all_time = player.getDuration().toFixed(2);
+			current_time = player.getCurrentTime().toFixed(2);
+			all_time = player.getDuration().toFixed(2);
 			//顯示當前影片時間
 			document.getElementById('timer').innerHTML = current_time + '秒/'+ all_time +'秒';	
 			{% for lyric in lyrics %}
 				if((current_time >= {{ lyric.start_time }}) && (current_time < {{ lyric.end_time }})){
-					var place = document.getElementsByTagName("p"); //取得所有為p標籤
-					for(var i=0;i<place.length;i++){
-						place[i].style.color = "black";  //右邊歌詞全黑
+					var pNum = document.getElementsByTagName("p");
+					var subNum = document.getElementsByClassName("move");
+					for(var i=0;i<subNum.length;i++){
+						subNum[i].style.color = "black";  //右邊歌詞全黑
 					}
 					document.getElementById("{{lyric.order}}").style.color = "blue"; //當前歌詞以藍色顯示	
-					//console.log(mouse_enter);
+					subtitle({{lyric.order}});
 					if(({{lyric.order}}) && (mouse_enter==0)){
 						document.getElementById("content").scrollTop = imgTop_Array[{{lyric.order}}];
 					}	
-					//顯示影片下方字幕
-					sentence = document.getElementById("{{lyric.order}}").innerHTML;
-					document.getElementById("cuewrap").innerHTML = sentence; //歌詞字幕(英文)
-					//chinese_words = "{{ lyric.pinyin }}";
-					//document.getElementById("cue_chinese").innerHTML = chinese_words; //中文字幕
 				}
 			{% endfor %}
+			//如果兩字幕時間差>2則不顯示字幕
+			for(var i=0; i<blackplace; i++){
+				if((current_time > black_stArray[i]) && current_time < black_etArray[i]){
+					document.getElementById("cuewrap").style.color = "black";
+				}
+			}
 		}
 	//global
 	var mouse_enter = 0;
