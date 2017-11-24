@@ -41,4 +41,5 @@ urlpatterns = [
     url(r'^uploadImage/$', uploadImage),
     url(r'^deleteImage/$', deleteImage),
 	url(r'^home/$', home),
+    url(r'^search/$', songSearch)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
