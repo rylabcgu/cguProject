@@ -4,15 +4,15 @@
 
 {% block content %}
 <div class="row">
-	<div class="col-md-10 offset-md-1">
+	<div class="col-md-12 offset-md-0">		
 		<div class="my-block">
-			<span style="font-size:30px;"><a href="/songlist/1/">最新影片</a></span>
+			<span style="font-size:30px;"><a href="/songlist/0/">最新影片</a></span>
 			<div class="row">
-				{% for s in song_list1 %}
+				{% for s in song_list0 %}
 				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
-					<p style="font-size:14px;">
+					<p style="font-size:16px;">
 						<a href="/video/{{ s.songID }}">
-						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="90" /><br>
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
 						{{ s.singer }} - {{ s.title }}
 						</a><br>
 						<small>
@@ -26,13 +26,33 @@
 		</div>
 		
 		<div class="my-block">
-			<span style="font-size:30px;"><a href="/songlist/2/">熱門影片</a></span>
+			<span style="font-size:30px;"><a href="/songlist/1/">熱門影片</a></span>
+			<div class="row">
+				{% for s in song_list1 %}
+				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
+					<p style="font-size:16px;">
+						<a href="/video/{{ s.songID }}">
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
+						{{ s.singer }} - {{ s.title }}
+						</a><br>
+						<small>
+							<a href="/userinfo/{{ s.uploader }}">{{ s.uploader }}</a><br>
+							觀看次數：{{ s.viewNumber }}
+						</small>
+					</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		
+		<div class="my-block">
+			<span style="font-size:30px;"><a href="/userinfo/{{ user2.username }}">{{ user2.username }}</a></span>
 			<div class="row">
 				{% for s in song_list2 %}
 				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
-					<p style="font-size:14px;">
+					<p style="font-size:16px;">
 						<a href="/video/{{ s.songID }}">
-						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="90" /><br>
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
 						{{ s.singer }} - {{ s.title }}
 						</a><br>
 						<small>
@@ -50,9 +70,9 @@
 			<div class="row">
 				{% for s in song_list3 %}
 				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
-					<p style="font-size:14px;">
+					<p style="font-size:16px;">
 						<a href="/video/{{ s.songID }}">
-						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="90" /><br>
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
 						{{ s.singer }} - {{ s.title }}
 						</a><br>
 						<small>
@@ -70,9 +90,9 @@
 			<div class="row">
 				{% for s in song_list4 %}
 				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
-					<p style="font-size:14px;">
+					<p style="font-size:16px;">
 						<a href="/video/{{ s.songID }}">
-						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="90" /><br>
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
 						{{ s.singer }} - {{ s.title }}
 						</a><br>
 						<small>
@@ -90,9 +110,9 @@
 			<div class="row">
 				{% for s in song_list5 %}
 				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
-					<p style="font-size:14px;">
+					<p style="font-size:16px;">
 						<a href="/video/{{ s.songID }}">
-						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="90" /><br>
+						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
 						{{ s.singer }} - {{ s.title }}
 						</a><br>
 						<small>
