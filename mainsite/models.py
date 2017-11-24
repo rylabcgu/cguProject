@@ -23,6 +23,7 @@ class Song(models.Model):
 	uploadTime = models.DateTimeField(auto_now_add=True)
 	viewNumber = models.IntegerField(default=0)
 	pinyinType = models.IntegerField(default=0)		#0: 臺羅閏號調/1: 臺羅數字調/2: 吳守禮方音
+	productionPerformance = models.DecimalField(max_digits=6, decimal_places=3, default=0)
 	
 	def __str__(self):
 		return str(self.songID)

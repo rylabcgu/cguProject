@@ -75,6 +75,7 @@ def makeNew(request):
 		composer = request.POST['composer']
 		lyricist = request.POST['lyricist']
 		pinyinType = request.POST['pinyinType']
+		productionPerformance = request.POST['productionPerformance']
 
 		order = request.POST.getlist('order')
 		lyricsText = request.POST.getlist('lyricsText')
@@ -85,7 +86,7 @@ def makeNew(request):
 
 		uploader = User.objects.get(username=request.POST['producer'])
 
-		vp = Song.objects.create(title=title, videoURL=vid, singer=singer, composer=composer, lyricist=lyricist, viewNumber=0, uploader=uploader, pinyinType=int(pinyinType))
+		vp = Song.objects.create(title=title, videoURL=vid, singer=singer, composer=composer, lyricist=lyricist, viewNumber=0, uploader=uploader, pinyinType=int(pinyinType), productionPerformance=float(productionPerformance))
 		vp.save()
 
 		for i in range(count):
@@ -423,4 +424,3 @@ def deleteImage(request):
 
 def songSearch(request):
 	keyword = request.GET["keyword"]
-	

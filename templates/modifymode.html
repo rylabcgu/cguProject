@@ -5,15 +5,15 @@
    <div class="row">
             <div class="col-md-10 offset-md-1" style="text-align: center;">
                 <div id="player"></div>
-                <div id="lyricsDiv" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px">
+                <div id="lyricsDiv" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px; overflow: scroll; height: 550px;" >
                     <form method="post" action="/aftermodify/">
                         {% csrf_token %}
                         <div id="form-main">
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Title: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title" size=50 placeholder="歌曲"  value={{song.title}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Singer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer" size=50 placeholder="歌手"  value={{song.singer}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Composer: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer" size=50 placeholder="作曲" value={{song.composer}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">Lyricist: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist" size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
-                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">YouTubeURL: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="videoURL" size=50 placeholder="輸入影片完整網址" value={{song.videoURL}}></div><button type="button" class="btn-primary" onclick="changeVideo()">更換</button></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">歌名: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="title" size=50 placeholder="歌名"  value={{song.title}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">歌手: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="singer" size=50 placeholder="歌手"  value={{song.singer}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">作曲: </label><div class="col-sm-6"><input class="my-line-text" type="text" name="composer" size=50 placeholder="作曲" value={{song.composer}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">作詞: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist" size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
+                            <div class="form-group row"><label class="col-sm-2 offset-sm-2">YouTube連結: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="videoURL" size=50 placeholder="輸入影片完整網址" value={{song.videoURL}}></div><button type="button" class="btn-primary" onclick="changeVideo()">更換</button></div>
                             <input type="hidden" name="SongID" value={{song.songID}}>
                             <input type="hidden" name="IfDelete" id="IfDelete" value="0">
                             {% for lyric in lyrics %}
@@ -34,6 +34,7 @@
                 <div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px">
                     從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph()"><br><br>
                     <button class="btn-primary" onclick="markCurrent()">循序播放</button>
+                    <button class="btn-primary" onclick="stopInterval()" id="StopIn" disabled="true">停止循序撥放</button>
                     <button class="btn-primary" onclick="submit(1)">提交</button>
                     <button class="btn-primary" onclick="deleteSong()">刪除歌曲</button>
                 </div>
@@ -73,57 +74,100 @@
         }
 
         function getVidFromUrl(url) {
-            if(url.match(/youtube/g) == null){
-                alert("請輸入正確YouTube的網址");
-                return false;
-            }
-            var vid = url.split("/")[3];
-            if(vid.match("v=")) {
-                vid = vid.split("v=")[1];
-                if(vid.match("&")) {
-                    vid = vid.split("&")[0];
-                    return vid;
+            var vid;
+            if(url.match(/youtube/g)){
+                vid = url.split("/")[3];
+                if(vid.match("v=")) {
+                    vid = vid.split("v=")[1];
+                    if(vid.match("&")) {
+                        vid = vid.split("&")[0];
+                        return vid;
+                    }
+                    else {
+                        return vid;
+                    }
                 }
                 else {
                     return vid;
                 }
             }
-            else {
+            else if(url.match(/youtu.be/g)){
+                vid = url.split("youtu.be/")[1];
                 return vid;
             }
+            else{
+                alert("請輸入正確YouTube的網址");
+                return false;
+                }
         }
 
-        function getVideoTimeFromSpace() {
+        function getVideoTimeFromSpace(time, dir) {     //dir:direction-0/up; 1/down
             var actElement = document.activeElement;
-            var nextElement;
-            var list=document.getElementsByClassName("partLyricsDiv");
-            var endStart=list[list.length-1]
-            if(actElement && actElement.name === "sText") {
-                actElement.value = player.getCurrentTime().toFixed(1);
-                if(actElement.parentElement === endStart) {
-                    nextElement = actElement.parentElement.children["eText"];
-                }
-                else{
-                    nextElement = actElement.parentElement.nextElementSibling.children["sText"];
-                }
-                nextElement.focus();            
+            if(!actElement){
+                return;
             }
-            else if(actElement && actElement.name === "eText") {
+            var nextElement = actElement;
+            var list=document.getElementsByClassName("partLyricsDiv");
+
+            if(time==1){
                 actElement.value = player.getCurrentTime().toFixed(1);
-                if(actElement.parentElement === endStart){
-                    window.alert('結束囉~~');
+            }
+            
+            if(dir==1){
+                if(actElement.parentElement === list[list.length-1]){
+                    if(actElement.name === "sText") {
+                        nextElement = actElement.nextSibling.nextSibling;
+                    }
+                    else{
+                        alert('結束囉~~');
+                    }
                 }
                 else{
-                    nextElement = actElement.parentElement.nextElementSibling.children["eText"];
-                    nextElement.focus();
+                    nextElement = actElement.parentElement.nextElementSibling.children[actElement.name];
+                }
+            }
+            else{
+                if(actElement.parentElement != list[0]){
+                    nextElement = actElement.parentElement.previousSibling.previousSibling.children[actElement.name];
+                }
+            }
+            nextElement.focus();
+            if(nextElement != actElement){
+                ScrollAdjust();
+            }
+        }
+
+        function ScrollAdjust(){
+            window.lyricsDiv.scrollBy(0, 10);
+        }
+
+        document.onkeyup = function() {
+            var key = event.which || event.keyCode;
+            var active = document.activeElement;
+            //console.log(active)
+            if(active.name =='sText' || active.name =='eText'){
+                if(key == 32 || key == 229) {               //key space
+                    getVideoTimeFromSpace(1,1);
+                }
+                if(key == 40) {                             //down
+                    getVideoTimeFromSpace(0,1)
+                }
+                if(key == 38) {                             //up
+                    getVideoTimeFromSpace(0,0)
                 }
             }
         }
 
-        document.onkeydown = function() {
-            key = event.keyCode;
-            if(key == 32) {             //key space
-                getVideoTimeFromSpace();
+        document.addEventListener("click", clickListen);
+
+        function clickListen() {
+            if(document.activeElement.name=='sText'){
+                var start=document.activeElement.value;
+                start=parseFloat(start);
+                console.log(start)
+                if(start!='' && !isNaN(start)){
+                    player.seekTo(start);
+                }
             }
         }
 
@@ -134,7 +178,7 @@
             var actElement = document.activeElement;
             var content='';
             if(iftmp==1){
-                var start='';
+                var start = player.getCurrentTime().toFixed(1);
                 if(actElement.parentElement.children["eText"].value!='' && actElement.parentElement.children["eText"].value!= 0.0){
                     var start=actElement.parentElement.children["eText"].value;
                 }
@@ -196,9 +240,16 @@
             return true;
         }
 
+        function stopInterval(){
+            window.clearInterval(repeat);
+            clear();
+            document.getElementById("StopIn").disabled = true;
+        }
+
         function markCurrent(){
             clear();
             window.clearInterval(repeat);
+            document.getElementById("StopIn").disabled = false;
             var list=document.getElementsByClassName("partLyricsDiv");
 
             if(dealTimeArea()==false){
@@ -255,7 +306,6 @@
         function seekVideoTime() {
             clear();
             window.clearInterval(repeat);
-            console.log(document.activeElement.parentElement.children)
             var text = document.activeElement.parentElement.children[2];
             var start = document.activeElement.parentElement.children[3].value;
             var end = document.activeElement.parentElement.children[4].value;
@@ -269,6 +319,7 @@
             if(end>start) {
                 text.style.color="green";
                 player.seekTo(start);
+                document.getElementById("StopIn").disabled = false;
                 repeat = setInterval(function(){
                     console.log('1')
                     var sec = Math.round(player.getCurrentTime()*10)/10;

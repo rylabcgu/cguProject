@@ -9,7 +9,7 @@
 				<div class="my-block" style="padding: 40px 40px 40px 40px">
 					<div id="urlInput">
 						<label>輸入Youtube URL：
-							<input size="40" class="my-line-text" type="text" name="yturl" data-toggle="tooltip" data-placement="bottom" title="沒有YouTube影片的網址，就無法製作歌曲喔~" >
+							<input size="40" class="my-line-text" type="text" name="yturl" autofocus="true" data-toggle="tooltip" data-placement="bottom" title="沒有YouTube影片的網址，就無法製作歌曲喔~" >
 						</label><br><br>
 						<button class="btn-primary" onclick="getYTVideo() ">開始</button>
 					</div>
@@ -39,7 +39,7 @@
 	<script type="text/javascript">
 
 		$(function(){
-    		$('body').tooltip({ selector: '[data-toggle="tooltip"]', delay:{hide:800} });
+    		$('body').tooltip({ selector: '[data-toggle="tooltip"]', delay:{hide:300} });
 		});
 
 		var tag = document.createElement('script');
@@ -50,7 +50,11 @@
 		var player;
 		var vid;
 		var title;
-		var InTime;		
+		var InTime;
+
+		$(document).ready(function(){ 
+		    $("input").attr("autocomplete", "off");
+		}); 		
 
 		function getYTVideo() {
 			InTime=TimeCaculate();
@@ -63,9 +67,9 @@
 				return;
 			}
 			player = new YT.Player('player', {
-		    height: '450',
-		    width: '90%',
-		    videoId: vid
+			    height: '450',
+			    width: '90%',
+			    videoId: vid
 		 	});
 			
 			btnDiv.setAttribute("class", "my-block");
@@ -75,28 +79,34 @@
 		 	var element = document.getElementById("initDiv");
 			element.parentNode.removeChild(element);
 			document.getElementById("totalLyrics").focus();
-			$("#imageresource").attr('src',"{% static 'images/MakeNewStep2.gif' %}");
 		}
 
 		function getVidFromUrl(url) {
-			if(url.match(/youtube/g) == null){
-				alert("請輸入正確YouTube的網址");
-				return false;
-			}
-			var vid = url.split("/")[3];
-			if(vid.match("v="))	{
-				vid = vid.split("v=")[1];
-				if(vid.match("&")) {
-					vid = vid.split("&")[0];
-					return vid;
+			var vid;
+			if(url.match(/youtube/g)){
+				vid = url.split("/")[3];
+				if(vid.match("v="))	{
+					vid = vid.split("v=")[1];
+					if(vid.match("&")) {
+						vid = vid.split("&")[0];
+						return vid;
+					}
+					else {
+						return vid;
+					}
 				}
 				else {
 					return vid;
 				}
 			}
-			else {
+			else if(url.match(/youtu.be/g)){
+				vid = url.split("youtu.be/")[1];
 				return vid;
 			}
+			else{
+				alert("請輸入正確YouTube的網址");
+				return false;
+				}
 		}
 
 		function TimeCaculate(){
@@ -203,7 +213,8 @@
 						  '<div class="form-group row"><label class="col-sm-2 offset-sm-2">作詞: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist", size=50 ></div></div>' +
 						  '<input type="hidden" name="producer" value="{{request.user}}">'+
 						  '<input type="hidden" name="vid" value="'+ vid +'">'+
-						  '<input type="hidden" name="pinyinType" id="pinyinType" value=-1>';;
+						  '<input type="hidden" name="pinyinType" id="pinyinType" value=-1>'+
+						  '<input type="hidden" name="productionPerformance" id="productionPerformance" value=0>';
 
 			if(all_lyrics==""){
 				window.alert('要輸入歌詞阿~~')
@@ -230,6 +241,7 @@
 			form_main.innerHTML = content;
 			
 			document.getElementsByName("sText")[0].focus();
+			$("input").attr("autocomplete", "off");
 			if(all_ALlyrics.length!=0){
 				setTooltip(1);
 			}
@@ -375,8 +387,8 @@
 				submit();
 			}
 			
-		}
-
+		} 
+ 
 		function setTooltip(ifAL){
 			var list=document.getElementsByClassName("partLyricsDiv");
 			ifAL=parseInt(ifAL);
@@ -393,29 +405,6 @@
 		}
 
 		var repeat;
-		/*
-		//有bug喔~
-		function seekVideoTime() {
-			window.clearInterval(repeat);
-			console.log(document.activeElement)
-			var start = document.activeElement.parentElement.children[3].value;
-			var end = document.activeElement.parentElement.children[4].value;
-			console.log(start)
-			console.log(end)
-			start=parseFloat(start);
-			end=parseFloat(end);
-			console.log('in')
-			if(!isNAN(start)) {
-				player.seekTo(start);
-				repeat = setInterval(function(){
-					var sec = Math.round(player.getCurrentTime()*10)/10;
-					if(sec>end){
-						player.seekTo(start);
-					}
-					},500);
-				}
-		} */
-
         function markCurrent(){
             var list=document.getElementsByClassName("partLyricsDiv");
 
@@ -489,7 +478,7 @@
 			var actElement = document.activeElement;
 			var content='';
 			if(iftmp==1){
-				var start='';
+				var start = player.getCurrentTime().toFixed(1);
 				if(actElement.parentElement.children["eText"].value!=''){
 					var start=actElement.parentElement.children["eText"].value;
 				}
@@ -523,45 +512,76 @@
 		}
 
 		
-		function getVideoTimeFromSpace() {
+		function getVideoTimeFromSpace(time, dir) {		//dir:direction-0/up; 1/down
 			var actElement = document.activeElement;
-			var nextElement;
+			if(!actElement){
+				return;
+			}
+			var nextElement = actElement;
 			var list=document.getElementsByClassName("partLyricsDiv");
-			var endStart=list[list.length-1]
-			if(actElement && actElement.name === "sText") {
+
+			if(time==1){
 				actElement.value = player.getCurrentTime().toFixed(1);
-				if(actElement.parentElement === endStart) {
-					nextElement = actElement.parentElement.children["eText"];
+			}
+			
+			if(dir==1){
+				if(actElement.parentElement === list[list.length-1]){
+					if(actElement.name === "sText") {
+						nextElement = actElement.nextSibling;
+					}
+					else{
+						alert('結束囉~~');
+					}
 				}
 				else{
-					nextElement = actElement.parentElement.nextElementSibling.children["sText"];
-				}
-				nextElement.focus();
-							
-			}
-			else if(actElement && actElement.name === "eText") {
-				actElement.value = player.getCurrentTime().toFixed(1);
-				if(actElement.parentElement === endStart){
-					window.alert('結束囉~~');
-				}
-				else{
-					nextElement = actElement.parentElement.nextElementSibling.children["eText"];
-					nextElement.focus();
+					nextElement = actElement.parentElement.nextElementSibling.children[actElement.name];
 				}
 			}
-			ScrollAdjust();
+			else{
+				if(actElement.parentElement != list[0]){
+					nextElement = actElement.parentElement.previousSibling.children[actElement.name];
+				}
+			}
+			
+			nextElement.focus();
+			if(nextElement != actElement){
+				ScrollAdjust();
+			}
 		}
 
 		function ScrollAdjust(){
-			//nextElement.scrollIntoView();
 			window.lyricsDiv.scrollBy(0, 10);
 		}
 
-		document.onkeydown = function() {
-			key = event.keyCode;
-			if(key == 32) {				//key space
-				getVideoTimeFromSpace();
+		document.onkeyup = function() {
+			var key = event.which || event.keyCode;
+			var active = document.activeElement;
+			//console.log(active)
+			if(active.name =='sText' || active.name =='eText'){
+				if(key == 32 || key == 229) {				//key space
+					getVideoTimeFromSpace(1,1);
+				}
+				if(key == 40) {								//down
+					getVideoTimeFromSpace(0,1)
+				}
+				if(key == 38) {								//up
+					getVideoTimeFromSpace(0,0)
+				}
 			}
+			
+		}
+
+		document.addEventListener("click", clickListen);
+
+		function clickListen() {
+		    if(document.activeElement.name=='sText'){
+		    	var start=document.activeElement.value;
+		    	start=parseFloat(start);
+		    	console.log(start)
+		    	if(start!='' && !isNaN(start)){
+		    		player.seekTo(start);
+		    	}
+		    }
 		}
 
 		function ReOrder(){
@@ -619,7 +639,7 @@
             if(behind>=start && behind<end){
             	overlay=1;
             }
-            var next=behind+8;
+            var next=behind+9;
             
             if(start==0){
             	insertNoDetailsLyric(start,end,next,ifAL,overlay,behind);
@@ -770,20 +790,78 @@
 			});
 		}
 
+		function escapeRegExp(type){
+			
+			var pattern;
+			console.log(type)
+			switch(Number(type)){
+				case 0:
+					pattern = /^[a-záàâāa̍éèêēe̍íìîīi̍óòôōo̍úùûūu̍ńǹn̂n̄][a-záàâāa̍éèêēe̍íìîīi̍óòôōo̍úùûūu̍ńǹn̂n̄\-]*[a-záàâāa̍éèêēe̍íìîīi̍óòôōo̍úùûūu̍ńǹn̂n̄]?$/gi;
+					break;
+				case 1:
+					pattern = /^([a-z]+[0-9\-])?$/gi;
+					break;
+				case 2:
+					pattern = /^[ㄅ-ㄭㆠ-ㆷ⊦ᒻˊˋ][ㄅ-ㄭㆠ-ㆷ⊦ᒻˊˋ\-]*[ㄅ-ㄭㆠ-ㆷ⊦ᒻˊˋ]?$/gi;
+					break;
+				default:
+					return;
+			}
+		
+			var totalAL=document.getElementsByName('ALText');
+			var res;
+			var str;
+			var wrong=0;
+			for(var i=0; i<totalAL.length; i++){
+				sentenceAL=totalAL[i].value;
+				var wordAL = sentenceAL.split(" ");
+				for(var j=0; j<wordAL.length; j++){
+					if(wordAL[j]!=''){
+						res = wordAL[j].match(pattern);
+						if(!res){
+							wrong=1;
+							console.log(wordAL[j])
+							totalAL[i].style.background="#FF9797";
+							break;
+						}
+					}
+				}
+			}
+			if(wrong==1){
+				alert('粉色部分含有不合法的羅馬拼音');
+			}
+		}
+
 		function submit(){
-			var OutTime=TimeCaculate();
-			var spend=OutTime-InTime;
+			var totalAL=document.getElementsByName('ALText');
+			for(var i=0; i<totalAL.length; i++){
+				totalAL[i].style.background="#FFFFFF";}
+
+			
+			var type=-1;
 			if(document.getElementById("pinyinType").value==-1){
-				var type=prompt("請問你使用的注音類型為何(輸入數字)?0. 臺羅閏號調/1. 臺羅數字調 /2. 吳守禮方音");
+				type = window.prompt("請問你使用的注音類型為何(輸入數字)?0. 臺羅閏號調/1. 臺羅數字調 /2. 吳守禮方音/ 3. 通用數字調");
 				if(type==0 || type==1 || type==2){
 					document.getElementById("pinyinType").value=type;
 				}
 				else{
-					alert("要輸入數字阿~")
+					alert("請輸入正確數字~")
 					return;
 				}
 			}
+			type = document.getElementById("pinyinType").value;
+			//escapeRegExp(type);
+			console.log('end')
+
+			var OutTime=TimeCaculate();
+			var spend=OutTime-InTime;
+			var totalTime=player.getDuration();
+			spend = spend/totalTime;
+			console.log(spend)
+			document.getElementById("productionPerformance").value=spend;
+
 			var form = document.getElementsByTagName("form")[1];
+			console.log(form)
 			form.submit();
 		}
 
