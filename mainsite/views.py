@@ -30,23 +30,24 @@ def index(request):
 	template = 'index.html'
 	args = {}
 	
-	username = request.user.username
-	user = User.objects.get(username=username)
-	follows = Follow.objects.filter(follower=user)
-	rfollow = random.choice(follows)
-	user2 = User.objects.get(username=rfollow)
+	if request.user.is_authenticated():
+		username = request.user.username
+		user = User.objects.get(username=username)
+		follows = Follow.objects.filter(follower=user)
+		rfollow = random.choice(follows)
+		user2 = User.objects.get(username=rfollow)
+		song_list2 = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
+		args['user2'] = user2
+		args['song_list2'] = song_list2
 	
 	song_list0 = Song.objects.all().order_by('-uploadTime')[:5]
 	song_list1 = Song.objects.all().order_by('-viewNumber')[:5]
-	song_list2 = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
 	song_list3 = Song.objects.filter(pinyinType=0).order_by('-uploadTime')[:5]
 	song_list4 = Song.objects.filter(pinyinType=1).order_by('-uploadTime')[:5]
 	song_list5 = Song.objects.filter(pinyinType=2).order_by('-uploadTime')[:5]
 	
-	args['user2'] = user2
 	args['song_list0'] = song_list0
 	args['song_list1'] = song_list1
-	args['song_list2'] = song_list2
 	args['song_list3'] = song_list3
 	args['song_list4'] = song_list4
 	args['song_list5'] = song_list5
