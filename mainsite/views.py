@@ -11,6 +11,7 @@ from urllib import parse
 import socket
 import json
 import os
+import random
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -29,14 +30,26 @@ def index(request):
 	template = 'index.html'
 	args = {}
 	
-	song_list1 = Song.objects.all().order_by('-uploadTime')[:5]
-	song_list2 = Song.objects.all().order_by('-viewNumber')[:5]
+	username = request.user.username
+	user = User.objects.get(username=username)
+	follows = Follow.objects.filter(follower=user)
+	rfollow = random.choice(follows)
+	user2 = User.objects.get(username=rfollow)
+	
+	song_list0 = Song.objects.all().order_by('-uploadTime')[:5]
+	song_list1 = Song.objects.all().order_by('-viewNumber')[:5]
+	song_list2 = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
 	song_list3 = Song.objects.filter(pinyinType=0).order_by('-uploadTime')[:5]
 	song_list4 = Song.objects.filter(pinyinType=1).order_by('-uploadTime')[:5]
 	song_list5 = Song.objects.filter(pinyinType=2).order_by('-uploadTime')[:5]
-		
+	
+	args['user2'] = user2
+	args['song_list0'] = song_list0
 	args['song_list1'] = song_list1
 	args['song_list2'] = song_list2
+	args['song_list3'] = song_list3
+	args['song_list4'] = song_list4
+	args['song_list5'] = song_list5
 
 	return render(request, template, args)
 
@@ -363,10 +376,10 @@ def songlist(request, id):
 	template = 'songlist.html'
 	args = {}
 	
-	if id == "1":
+	if id == "0":
 		song_list = Song.objects.all().order_by('-uploadTime')
-	elif id == "2":
-		song_list = Song.objects.all().order_by('-viewNumber')
+	elif id == "1":
+		song_list = Song.objects.all().order_by('-viewNumber')	
 	elif id == "3":
 		song_list = Song.objects.filter(pinyinType=0)
 	elif id == "4":
