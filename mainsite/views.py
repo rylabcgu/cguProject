@@ -421,3 +421,6 @@ def deleteImage(request):
 	profile.save()
 	return HttpResponseRedirect("/userinfo/" + request.user.username)
 
+def songSearch(request):
+	keyword = request.GET["keyword"]
+	
