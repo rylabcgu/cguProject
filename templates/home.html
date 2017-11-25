@@ -1,4 +1,9 @@
 {% load static %}
+{% if user.is_authenticated %}
+	<script type="text/javascript">
+		document.location.href = "/index/";
+	</script>
+{% endif %}
 <!DOCTYPE html>
 <html>
 <head>
