@@ -337,7 +337,7 @@ def follow(request, id):
 	return HttpResponse(action)
 
 @login_required(login_url='/accounts/login/')
-def userinfo(request, id):
+def userinfo(request, id, view):
 	template = 'userinfo.html'
 	args = {}
 
@@ -358,7 +358,8 @@ def userinfo(request, id):
 	
 	favorites = Favorite.objects.filter(user=user2)
 	uploadSongs = Song.objects.filter(uploader=user2)
-	follows = Follow.objects.filter(follower=user)
+	follows = Follow.objects.filter(follower=user2)
+
 	
 	try:
 		f = Follow.objects.get(follower=user, followee=user2)
@@ -370,6 +371,16 @@ def userinfo(request, id):
 	else:
 		isFollowing = "已追蹤"
 	
+	# get all following users' profile image 
+	follow_profile_srch_list = []
+	follow_profile_imgs = {}
+	for follow in follows:
+		follow_profile_srch_list.append(follow.followee)
+	profiles = Profile.objects.filter(user__in=follow_profile_srch_list)
+	for profile in profiles:
+		follow_profile_imgs[profile.user.username] = profile.profileImg
+	args['follow_profile_imgs'] = follow_profile_imgs
+
 	args['user2'] = user2
 	args['userinfo'] = userinfo
 	args['favorites'] = favorites
@@ -377,6 +388,7 @@ def userinfo(request, id):
 	args['follows'] = follows
 	args['isFollowing'] = isFollowing
 	args['id'] = id
+	args['view'] = view
 	
 	return render(request, template, args)
 	
