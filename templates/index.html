@@ -44,26 +44,27 @@
 				{% endfor %}
 			</div>
 		</div>
-		
-		<div class="my-block">
-			<span style="font-size:30px;"><a href="/userinfo/{{ user2.username }}">{{ user2.username }}</a></span>
-			<div class="row">
-				{% for s in song_list2 %}
-				<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
-					<p style="font-size:16px;">
-						<a href="/video/{{ s.songID }}">
-						<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
-						{{ s.singer }} - {{ s.title }}
-						</a><br>
-						<small>
-							<a href="/userinfo/{{ s.uploader }}">{{ s.uploader }}</a><br>
-							觀看次數：{{ s.viewNumber }}
-						</small>
-					</p>
+		{% if song_list2 %}
+			<div class="my-block">
+				<span style="font-size:30px;"><a href="/userinfo/{{ user2.username }}">{{ user2.username }}</a></span>
+				<div class="row">
+					{% for s in song_list2 %}
+					<div class="col-md-2" style="margin: 10px 10px 10px 10px;">
+						<p style="font-size:16px;">
+							<a href="/video/{{ s.songID }}">
+							<img src="http://img.youtube.com/vi/{{ s.videoURL }}/0.jpg" width="100%" height="100" /><br>
+							{{ s.singer }} - {{ s.title }}
+							</a><br>
+							<small>
+								<a href="/userinfo/{{ s.uploader }}">{{ s.uploader }}</a><br>
+								觀看次數：{{ s.viewNumber }}
+							</small>
+						</p>
+					</div>
+					{% endfor %}
 				</div>
-				{% endfor %}
 			</div>
-		</div>
+		{% endif %}
 		
 		<div class="my-block">
 			<span style="font-size:30px;"><a href="/songlist/3/">臺羅閏號調</a></span>

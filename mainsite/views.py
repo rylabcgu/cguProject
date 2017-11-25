@@ -33,12 +33,17 @@ def index(request):
 	if request.user.is_authenticated():
 		username = request.user.username
 		user = User.objects.get(username=username)
-		follows = Follow.objects.filter(follower=user)
-		rfollow = random.choice(follows)
-		user2 = User.objects.get(username=rfollow)
-		song_list2 = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
-		args['user2'] = user2
-		args['song_list2'] = song_list2
+		
+		if Follow.objects.filter(follower=user):
+			follows = Follow.objects.filter(follower=user)
+			rfollow = random.choice(follows)
+			user2 = User.objects.get(username=rfollow)
+			song_list2 = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
+			args['user2'] = user2
+			args['song_list2'] = song_list2
+		else:
+			args['song_list2'] = None
+		
 	
 	song_list0 = Song.objects.all().order_by('-uploadTime')[:5]
 	song_list1 = Song.objects.all().order_by('-viewNumber')[:5]
