@@ -368,7 +368,7 @@ def userinfo(request, id):
 	if f == None:
 		isFollowing = "追蹤"
 	else:
-		isFollowing = "取消追蹤"
+		isFollowing = "已追蹤"
 	
 	args['user2'] = user2
 	args['userinfo'] = userinfo
