@@ -330,13 +330,13 @@
 				{% for lyric in lyrics %}
 					x = document.getElementById("{{lyric.order}}");
 					var rt_pinyin = x.getElementsByTagName("rt");
-					if(rt_pinyin.length>1){ 
+					if(document.getElementById("pinyin_{{lyric.order}}_1")){
 						for(var i=1;i<=rt_pinyin.length;i++){ 
 							var pinyin_id = "pinyin_{{lyric.order}}_"+i;
 							document.getElementById(pinyin_id).style.visibility = "visible";
-						}						
-					}
-					else{ //rt_pinyin.length<=1 為沒有對齊的ruby
+						}
+					}							
+					else{
 						document.getElementById("pinyin_{{lyric.order}}").style.visibility = "visible";
 					}
 				{% endfor %}
@@ -348,15 +348,15 @@
 				{% for lyric in lyrics %}
 					x = document.getElementById("{{lyric.order}}");
 					var rt_pinyin = x.getElementsByTagName("rt");
-					if(rt_pinyin.length>1){ 
+					if(document.getElementById("pinyin_{{lyric.order}}_1")){//判斷是否是對齊的rt
 						for(var i=1;i<=rt_pinyin.length;i++){ 
-							var pinyin_id = "pinyin_{{lyric.order}}_"+i;
-							document.getElementById(pinyin_id).style.visibility = "hidden";
-						}						
-					}
+						var pinyin_id = "pinyin_{{lyric.order}}_"+i;
+						document.getElementById(pinyin_id).style.visibility = "hidden";
+						}
+					}				
 					else{ //rt_pinyin.length<=1 為沒有對齊的ruby
 						document.getElementById("pinyin_{{lyric.order}}").style.visibility = "hidden";
-					}
+					}					
 				{% endfor %}
 			}	
 		}
