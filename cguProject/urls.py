@@ -29,7 +29,7 @@ urlpatterns = [
     url(r'^makeNew/$', makeNew),
     url(r'^video/(\w+)/$', video),
     url(r'^like/(\w+)/$', like),
-    url(r'^follow/(\w+)/(\w+)/$', follow),
+    url(r'^follow/(\w+)/$', follow),
     url(r'^favorite/(\w+)/$', favorite),
     url(r'^comment/(\w+)/$', comment),
     url(r'^modify/$', modify),
