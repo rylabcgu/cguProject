@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^aftermodify/$',aftermodify),
     url(r'^autoAL/$', autoAL, name='autoAL'),
     url(r'^songlist/(\w+)/$', songlist),
-    url(r'^userinfo/(\w+)/$', userinfo),
+    url(r'^userinfo/(\w+)/(\w+)$', userinfo),
     url(r'^userinfoedit/$', userinfoEdit),
     url(r'^uploadImage/$', uploadImage),
     url(r'^deleteImage/$', deleteImage),
