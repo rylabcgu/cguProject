@@ -19,29 +19,17 @@
 		{
 			if(xmlhttp.readyState==4 && xmlhttp.status==200)
 			{
-				if(FollowButton.value == "追蹤")
-					FollowButton.value = "取消追蹤";
-				else if(FollowButton.value == "取消追蹤")
+				if(xmlhttp.responseText == "notFollow") {
 					FollowButton.value = "追蹤";
-				else
-					FollowButton.value = "87";
+				}
+				else {
+					FollowButton.value = "已追蹤";
+				}
 			}
 		}
-		if(FollowButton.value == "追蹤")
-		{
-			xmlhttp.open("GET", "/follow/create/{{ user2.username }}/", true);
-			xmlhttp.send();
-		}
-		else if(FollowButton.value == "取消追蹤")
-		{
-			xmlhttp.open("GET", "/follow/delete/{{ user2.username }}/", true);
-			xmlhttp.send();
-		}
-		else
-		{
-			xmlhttp.open("GET", "/follow/87/", true);
-			xmlhttp.send();
-		}
+
+		xmlhttp.open("GET", "/follow/{{ user2 }}/", true);
+		xmlhttp.send();
 	}
 </script>
 

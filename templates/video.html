@@ -31,7 +31,47 @@
 					<div class="my-inline" style="font-size:24px; width: 49%">{{ song.singer }} - {{ song.title }}</div>
 					<div class="my-inline" style="text-align: right; width: 50%; color: grey;">{{ song.viewNumber }}次觀看</div>
 				</div>
-				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
+				<div>
+					上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a>
+					{% ifnotequal request.user.username song.uploader %}
+						<div style="display: inline-block; margin-left:10px">
+							{% if isFollowing %}
+								<input type="button" id="FollowButton" onclick="follow()" value="已追蹤">
+							{% else %}
+								<input type="button" id="FollowButton" onclick="follow()" value="追蹤">
+							{% endif %}
+						</div>
+						<script type="text/javascript">
+							function follow()
+							{
+								var FollowButton = document.getElementById("FollowButton");
+								var xmlhttp;
+								
+								if(window.XMLHttpRequest) // code for IE7+, Firefox, Chrome, Opera, Safari
+									xmlhttp = new XMLHttpRequest();
+								else // code for IE6, IE5
+									xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+								
+								xmlhttp.onreadystatechange = function()
+								{
+									if(xmlhttp.readyState==4 && xmlhttp.status==200)
+									{
+										if(xmlhttp.responseText == "notFollow") {
+											FollowButton.value = "追蹤";
+										}
+										else {
+											FollowButton.value = "已追蹤";
+										}
+									}
+								}
+
+								xmlhttp.open("GET", "/follow/{{ song.uploader }}/", true);
+								xmlhttp.send();
+								
+							}
+						</script>
+					{% endifnotequal %}
+				</div>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
 				<hr style="background-color: #0275D8">
 				<div><!--訂閱 -->
@@ -109,8 +149,8 @@
 					{% for i in show_comments %}
 						<div class="comment_item">
 							<div>
-								{% if profile_imgs|get_item:i.user.username %}
-									<img src="/media/{{ profile_imgs | get_item:i.user.username }}" style="width:36px; height: 36px">
+								{% if comment_profile_imgs|get_item:i.user.username %}
+									<img src="/media/{{ comment_profile_imgs | get_item:i.user.username }}" style="width:36px; height: 36px">
 								{% else %}
 									<img src="{% static 'images/皮卡丘.jpg'%}" style="width:36px; height: 36px">
 								{% endif %}
