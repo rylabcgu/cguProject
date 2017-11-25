@@ -136,8 +136,7 @@ def video(request, id):
 	template = "video.html"
 	args = {}
 	args['now'] = timezone.now()
-	profile_srch_list = []
-	profile_imgs = {}
+	
 	song = Song.objects.get(songID=id)
 	args['song'] = song;
 	args['lyrics'] = Lyric.objects.filter(song=song)#.order_by('start_time')	
@@ -145,15 +144,19 @@ def video(request, id):
 	Song.objects.filter(songID=id).update(viewNumber=viewNumbers)
 	modify = False 
 	this_song_comments = Comment.objects.filter(song=song)
+
+	# get all comment users' profile image 
+	comment_profile_srch_list = []
+	comment_profile_imgs = {}
 	for comment in this_song_comments:
 		if comment.user not in profile_srch_list:
-			profile_srch_list.append(comment.user)
-
-	profiles = Profile.objects.filter(user__in=profile_srch_list)
+			comment_profile_srch_list.append(comment.user)
+	profiles = Profile.objects.filter(user__in=comment_profile_srch_list)
 	for profile in profiles:
-		profile_imgs[profile.user.username] = profile.profileImg
+		comment_profile_imgs[profile.user.username] = profile.profileImg
+	args['comment_profile_imgs'] = comment_profile_imgs
 
-	args['profile_imgs'] = profile_imgs
+
 	args['this_song_comments'] = this_song_comments
 	args['show_comments'] = this_song_comments.order_by('commentTime')#[:5]
 	login_out = " 登出"
@@ -162,11 +165,20 @@ def video(request, id):
 		username = request.user.username
 		user = User.objects.get(username=username)
 		args['user'] = user;
-		args['profileImg'] = Profile.objects.filter(user=user)
+		
 		if song.uploader==User.objects.get(username=request.user.username):
 			modify=True
 		else:
 			modify= False
+
+		#check following
+		try:
+			Follow.objects.get(follower=request.user, followee=song.uploader)
+			isFollowing = True
+		except Follow.DoesNotExist:
+			isFollowing = False
+		args["isFollowing"] = isFollowing
+
 
 		args['modify'] = modify;
 		args['check_user_rating'] =  Rating.objects.filter(user=user,song=song,good_grade=1)
@@ -307,20 +319,22 @@ def aftermodify(request):
 	else:
 		return HttpResponse("error")
 
-def follow(request, followMotion, id):
+def follow(request, id):
 	username = request.user.username
 	user = User.objects.get(username=username)
-	user2 = User.objects.get(username=id)
-	
-	if followMotion=="create":
-		f = Follow.objects.create(follower=user, followee=user2)
-	elif followMotion=="delete":
-		f = Follow.objects.get(follower=user, followee=user2)
+	uploader = User.objects.get(username=id)
+	action = ""
+
+	try:
+		f = Follow.objects.get(follower=user, followee=uploader)
 		f.delete()
-	else:
-		f = 87
-	
-	return redirect("/")
+		action = "notFollow"
+	except Follow.DoesNotExist:
+		f = Follow.objects.create(follower=user, followee=uploader)
+		f.save()
+		action = "following"
+
+	return HttpResponse(action)
 
 @login_required(login_url='/accounts/login/')
 def userinfo(request, id):
