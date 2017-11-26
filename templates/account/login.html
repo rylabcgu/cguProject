@@ -44,7 +44,7 @@
                     </div>
                     
                     <div>
-                        <button class="primaryAction btn-primary btn-block" type="button" onclick="login_submit()">{% trans "Sign In" %}</button>
+                        <button id="btn-submit" class="primaryAction btn-primary btn-block" type="button" onclick="login_submit()">{% trans "Sign In" %}</button>
                     </div>                    
                     <div style="text-align: center;">
                         <div class="my-error-msg">{{ form.non_field_errors }}</div>
@@ -70,7 +70,20 @@
             }
         }
 
+        var btn_submit = document.getElementById("btn-submit");
+        btn_submit.innerHTML = '請稍後...';
+        btn_submit.style.backgroundColor = '#B4D5FC';
+        btn_submit.style.borderColor = '#B4D5FC';
+        btn_submit.disabled = true;
         form.submit();
+    }
+
+    document.onkeyup = function() {
+        var key = event.which || event.keyCode;
+        if(key == 13) {     //key Enter
+            var btn_submit = document.getElementById("btn-submit");
+            btn_submit.click()
+        }   
     }
 </script>
 
