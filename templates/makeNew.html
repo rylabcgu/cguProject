@@ -74,7 +74,7 @@
 			
 			btnDiv.setAttribute("class", "my-block");
 			lyricsDiv.setAttribute("class", "my-block");
-		 	form_main.innerHTML = "<textarea class='my-textarea' id='totalLyrics' rows='20' cols='45%' placeholder='請輸入台文歌詞' data-toggle='tooltip' data-placement='left' title='小撇部:一句歌詞不要太長，呈現時會更美觀'></textarea><textarea class='my-textarea' id='totalALLyrics' rows='20' cols='45%' placeholder='請輸入羅馬拼音歌詞' data-toggle='tooltip' data-placement='right' title='沒有注音也沒關西，後面步驟有提供自動注音的服務'></textarea>";
+		 	form_main.innerHTML = "<textarea class='my-textarea' id='totalLyrics' rows='20' cols='45%' placeholder='請輸入台文歌詞' data-toggle='tooltip' data-placement='left' title='小撇步: 一句歌詞不要太長，呈現時會更美觀'></textarea><textarea class='my-textarea' id='totalALLyrics' rows='20' cols='45%' placeholder='請輸入羅馬拼音歌詞' data-toggle='tooltip' data-placement='right' title='沒有注音也沒關係，後面步驟有提供自動注音的服務'></textarea>";
 		 	btnDiv.innerHTML = "<button class='btn-primary' data-toggle='tooltip' data-placement='top' title='在台文的方框中放台羅夾雜(行為單位)的歌詞，會智慧為你分離' onclick='seperate()'>台文與羅馬拼音分離</button><button class='btn-primary' onclick='cutLyrics()'>下一步</button>";
 		 	var element = document.getElementById("initDiv");
 			element.parentNode.removeChild(element);
@@ -399,8 +399,8 @@
 				}
 			}
 			list[0].children[6+ifAL].setAttribute("title","適時插入間奏會使這首歌更方便學習喔~");
-			list[0].children[3+ifAL].setAttribute("title","小撇部: 只要輸入最後一句的就可以了~");
-			list[0].children[2+ifAL].setAttribute("title","按下空白鍵會顯示目前影片時間，並會自動跳到下一格喔~");
+			list[0].children[3+ifAL].setAttribute("title","小撇步: 只要輸入最後一句的就可以了~");
+			list[0].children[2+ifAL].setAttribute("title","按下空白鍵會顯示目前影片時間，並自動跳到下一格喔~");
 			console.log(list[0].children)
 		}
 
