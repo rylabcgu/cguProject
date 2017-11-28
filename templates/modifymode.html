@@ -15,6 +15,7 @@
                             <div class="form-group row"><label class="col-sm-2 offset-sm-2">作詞: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="lyricist" size=50 placeholder="作詞" value={{song.lyricist}}></div></div>
                             <div class="form-group row"><label class="col-sm-2 offset-sm-2">YouTube連結: </label> <div class="col-sm-6"><input class="my-line-text" type="text" name="videoURL" size=50 placeholder="輸入影片完整網址" value={{song.videoURL}}></div><button type="button" class="btn-primary" onclick="changeVideo()">更換</button></div>
                             <input type="hidden" name="SongID" value={{song.songID}}>
+                            
                             <input type="hidden" name="IfDelete" id="IfDelete" value="0">
                             {% for lyric in lyrics %}
                                 <div class="partLyricsDiv">
@@ -33,6 +34,7 @@
                 </div>
                 <div id="btnDiv" style="margin: 0px 0px 5px 0px; padding: 5px 0px 5px 0px">
                     從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph()"><br><br>
+                    即時注音: <input type ="text" id="translationB" size="25"> --> <input type ="text" id="translationA" size="25"><br><br>
                     <button class="btn-primary" onclick="markCurrent()">循序播放</button>
                     <button class="btn-primary" onclick="stopInterval()" id="StopIn" disabled="true">停止循序撥放</button>
                     <button class="btn-primary" onclick="submit(1)">提交</button>
@@ -487,6 +489,33 @@
             return content;
         }
 
+        $('#translationB').on('keyup', function() {
+            Translate($(this).val());
+            console.log('.on(keyup) = ' + $(this).val());
+          });
+
+        function Translate(val){
+            console.log(val);
+            var result = {{song.pinyinType}};
+            result+='$';
+            result+=val;
+            result = JSON.stringify(result);
+            
+            $.ajax({
+                type: 'POST',
+                url: "/autoAL/",
+                contentType: 'application/json; charset=utf-8',
+                data: result,
+                success: function(msg)
+                {
+                    console.log(msg)
+                    msg = msg.split("$")[1];
+                    document.getElementById('translationA').value = msg;
+                },
+                dataType: 'text'
+            });
+        }
+
         function arrange(){
             var title = document.getElementsByName("title")[0].value;
             if(title) {
@@ -526,6 +555,18 @@
             }
            
         }
+
+    function csrfSafeMethod(method) {
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+                }
+            }
+        });
+
 
     </script>
 {% endblock %}
