@@ -29,3 +29,7 @@ admin.site.register(Comment, CommentAdmin)
 class RatingAdmin(admin.ModelAdmin):
 	list_display = ('user','song','good_grade','bad_grade')
 admin.site.register(Rating, RatingAdmin)
+
+class HashtagAdmin(admin.ModelAdmin):
+	list_display = ('tagName','song')
+admin.site.register(Hashtag, HashtagAdmin)

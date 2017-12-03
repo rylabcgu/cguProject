@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^modify/$', modify),
     url(r'^aftermodify/$',aftermodify),
     url(r'^autoAL/$', autoAL, name='autoAL'),
+    url(r'^TagFounder/$', TagFounder, name='TagFounder'),
     url(r'^songlist/(\w+)/$', songlist),
     url(r'^userinfo/(\w+)/(\w+)$', userinfo),
     url(r'^userinfoedit/$', userinfoEdit),

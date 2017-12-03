@@ -231,13 +231,16 @@
 			}
 			else{
 				content+=DisplayWithAL(all_lyrics,all_ALlyrics);
+
 				btnDiv.innerHTML = '從第 <input type ="text" name="copyFrom" size="1"> 句到第 <input type ="text" name="copyTo" size="1"> 句歌詞複製在第 <input type ="text" name="copyBehind" size="1">句歌詞之後 <input class="btn-primary" type ="button" value ="GO!" onclick = "copyParagraph(0)" data-toggle="tooltip" data-placement="right" title="副歌重複又不想重打一次?按下GO!為你複製整段歌詞~"><br><br>全部歌詞開始時間平移<input type ="text" name="ShiftUnit" size="1">秒<input class="btn-primary" type ="button" value ="GO!" onclick = "Shift()"><br><br><button class="btn-primary" onclick="markCurrent()" data-toggle="tooltip" data-placement="left" title="歌曲從頭撥放，歌詞會在你設定的時間內亮起">循序播放</button><button class="btn-primary" onclick="arrange(2)" data-toggle="tooltip" data-placement="right" title="之後會有修正介面，讓你做小幅度的修改">提交</button>';
 			}	//有給羅馬拼音且行數正確，直接讓他作好時間點就可以提交
 			content +='<br>';
 
 			
 			var form_main = document.getElementById("form-main");
-
+			content+="<br>歌曲說明:<br><textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag()'></textarea><br>";
+			content+="<input type='hidden' name='tags' id='tags' value=0>";
+			/*content+="<br>歌曲說明:<br><textarea class='my-textarea' id='SongContent' name='SongContent' rows='8' cols='80%' onkeyup='textareakeyup()' onblur='useTag()'></textarea><br>";*/
 			form_main.innerHTML = content;
 			
 			document.getElementsByName("sText")[0].focus();
@@ -250,6 +253,70 @@
 			}
 			
 		}
+
+/*		function textareakeyup(){
+			var x = document.getElementById("SongContent").value;
+			if(x.match(' #')){
+				console.log('tag')
+				var tagcontent=x.split(' #');
+				HashTag(tagcontent[1]);				
+			}
+		}
+
+		function HashTag(val){
+            console.log(val)
+            result = JSON.stringify(val);
+            
+            $.ajax({
+                type: 'POST',
+                url: "/TagFounder/",
+                contentType: 'application/json; charset=utf-8',
+                data: result,
+                success: function(msg)
+                {
+                    console.log(msg)
+                    //useTag(msg, val);
+                },
+                dataType: 'text'
+            });
+        }*/
+
+        function showTag(){
+        	var songcontent = document.getElementById("SongContentI");
+        	var content=songcontent.value;
+        	pattern = /\s#[a-zA-Z0-9\u4e00-\u9fa5]*\s/g;
+        	var res=content.match(pattern);
+        	console.log(res)
+        	if(res){
+        		for(var i=0; i<res.length;i++){
+	        		console.log(res[i])
+	        		var tag='<span class="clickable-words" name="tag">'+res[i]+'</span>';
+	        		console.log(tag)
+	        		content = content.replace(res[i], tag);
+	        		console.log(content)
+
+        		}
+        	}
+        	
+        	var change = document.createElement("p");
+        	change.id = "SongContentP";
+        	change.name = "SongContentP";
+        	change.innerHTML = content;
+        	songcontent.parentElement.appendChild(change);
+        	document.getElementById("SongContentI").setAttribute("style", "display:none;");
+        	document.getElementById("SongContentP").setAttribute("ondblclick", " modifyTag()");
+		}
+
+		function modifyTag(){
+			console.log('in')
+			document.getElementById("SongContentI").setAttribute("style", "display:show;");
+			document.getElementById("SongContentP").remove();
+		}
+/*
+		$("#SongContentP").dblclick(function(){
+		    console.log('in')
+		    document.getElementById("SongContentI").removeAttr("type")
+		  });*/
 
 		function DisplayNoAL(all_lyrics){
 			var content='';
@@ -860,7 +927,17 @@
 			console.log(spend)
 			document.getElementById("productionPerformance").value=spend;
 
-			var form = document.getElementsByTagName("form")[1];
+			var tag = document.getElementsByName("tag");
+			var tagList = '0';
+			if(tag){
+				tagList = '1';
+				for(var i=0;i<tag.length;i++){
+					tagList+=tag[i].innerHTML;
+					console.log(tagList)
+				}}
+			tagList = tagList.replace(/\s/g,'');
+			document.getElementById("tags").value = tagList;
+			var form = document.getElementsByTagName("form")[0];
 			console.log(form)
 			form.submit();
 		}

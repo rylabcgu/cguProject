@@ -24,6 +24,7 @@ class Song(models.Model):
 	viewNumber = models.IntegerField(default=0)
 	pinyinType = models.IntegerField(default=0)		#0: 臺羅閏號調/1: 臺羅數字調/2: 吳守禮方音
 	productionPerformance = models.DecimalField(max_digits=6, decimal_places=3, default=0)
+	content = models.TextField(blank=True) 
 	
 	def __str__(self):
 		return str(self.songID)
@@ -70,3 +71,10 @@ class Rating(models.Model):
 	song = models.ForeignKey(Song)	#外鍵
 	good_grade = models.IntegerField(default=0)
 	bad_grade = models.IntegerField(default=0)
+
+class Hashtag(models.Model):
+	tagName = models.CharField(max_length=20)
+	song = models.ForeignKey(Song)
+
+	def __str__(self):
+		return str(self.tagName)

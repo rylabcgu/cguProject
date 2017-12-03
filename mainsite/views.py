@@ -82,6 +82,8 @@ def makeNew(request):
 		lyricist = request.POST['lyricist']
 		pinyinType = request.POST['pinyinType']
 		productionPerformance = request.POST['productionPerformance']
+		content = request.POST['SongContentI']
+		tags = request.POST['tags']
 
 		order = request.POST.getlist('order')
 		lyricsText = request.POST.getlist('lyricsText')
@@ -92,15 +94,36 @@ def makeNew(request):
 
 		uploader = User.objects.get(username=request.POST['producer'])
 
-		vp = Song.objects.create(title=title, videoURL=vid, singer=singer, composer=composer, lyricist=lyricist, viewNumber=0, uploader=uploader, pinyinType=int(pinyinType), productionPerformance=float(productionPerformance))
+		vp = Song.objects.create(title=title, videoURL=vid, singer=singer, composer=composer, lyricist=lyricist, viewNumber=0, uploader=uploader, pinyinType=int(pinyinType), productionPerformance=float(productionPerformance), content=content)
 		vp.save()
 
 		for i in range(count):
 			l = Lyric.objects.create(song=vp, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
 			l.save()
+
+		tags = tags.split('#');
+		tagslength = len(tags);
+		for i in range(tagslength):
+			if i>0:
+				T = Hashtag.objects.create(tagName=tags[i], song=vp)
+				T.save()
+
+
 		return HttpResponseRedirect('/video/' + str(vp.songID))
 	else:
 		return render(request, template, args)
+
+def TagFounder(request):
+	if request.is_ajax():
+		if request.method == 'POST':
+			tmp = json.loads(request.body.decode('utf-8'))
+			tmpL = Hashtag.objects.filter(tagName__contains = tmp)
+			s=[]
+			for tagName in tmpL:
+				s.append(tagName)
+				s.append('/')
+			
+			return HttpResponse(s)
 
 def autoAL(request):
 	if request.is_ajax():
@@ -282,7 +305,8 @@ def modify(request):
 		args = {}
 		song = Song.objects.get(songID=request.GET['id'])
 		args['song'] = song
-		args['lyrics'] = Lyric.objects.filter(song=song) 
+		args['lyrics'] = Lyric.objects.filter(song=song)
+		args['hashtag'] = Hashtag.objects.filter(song=song)
 		return render(request, template, args)
 
 def aftermodify(request):
@@ -293,13 +317,15 @@ def aftermodify(request):
 		composer = request.POST['composer']
 		lyricist = request.POST['lyricist']
 		videoURL = request.POST['videoURL']
+		content = request.POST['SongContentI']
+		tags = request.POST['tags']
 		this_song = Song.objects.get(songID=request.POST['SongID'])
 		
 		if delete !='0':
 			this_song.delete()
-			return HttpResponseRedirect('/songlist/2/')
+			return HttpResponseRedirect('/songlist/0/')
 		else:
-			Song.objects.filter(songID=request.POST['SongID']).update(singer=singer, composer=composer, lyricist=lyricist, title=title, videoURL=videoURL)
+			Song.objects.filter(songID=request.POST['SongID']).update(singer=singer, composer=composer, lyricist=lyricist, title=title, videoURL=videoURL, content=content)
 			order = request.POST.getlist('order')
 			lyricsText = request.POST.getlist('lyricsText')
 			ALText = request.POST.getlist('ALText')
@@ -314,6 +340,16 @@ def aftermodify(request):
 			for i in range(count):
 				l = Lyric.objects.create(song=this_song, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
 				l.save()
+
+			tags = tags.split('#');
+			tagslength = len(tags);
+			for i in range(tagslength):
+				if i>0:
+					try:
+					    T = Hashtag.objects.get(tagName=tags[i], song=this_song)
+					except Hashtag.DoesNotExist:
+					    T = Hashtag(tagName=tags[i], song=this_song)
+					    T.save()
 
 			return HttpResponseRedirect('/video/'+str(this_song.songID))
 	else:
