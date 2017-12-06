@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block head_title %}  {% endblock %}
+
+{% block content %} 
+	<div class="row">
+		<div class="col-md-12 my-block" style="padding: 1em 2em">
+			{% for song in songs %}
+				<a href="/video/{{ song.songID }}"><div style="margin: 1em 1em">
+					<div style="display: inline-block; padding-right: 1em"><img src="http://img.youtube.com/vi/{{ song.videoURL }}/0.jpg" style="width: 16em; height: 9em"></div>
+					<div style="display: inline-block;">
+						<h4>{{ song.singer }} - {{ song.title }}</h4>
+						<small><a href="/userinfo/{{ song.uploader }}/videos">{{ song.uploader }}</a> {{ song.uploadTime }}<br>{{ song.viewNumber }} 人次觀看</small>
+					</div>
+				</div></a>
+			{% endfor %}
+		</div>		
+	</div>
+{% endblock %}

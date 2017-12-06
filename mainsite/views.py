@@ -17,6 +17,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.template.context_processors import csrf
 from django.utils import timezone
+import operator
+from django.db.models import Q
 
 
 
@@ -480,7 +482,7 @@ def uploadImage(request):
 		profile.profileImg = request.FILES['imgFile']
 		profile.save()
 	
-	return HttpResponseRedirect("/userinfo/" + request.user.username)
+	return HttpResponseRedirect("/userinfo/" + request.user.username + "/videos/")
 
 def deleteImage(request):
 	profile = Profile.objects.get(user=request.user)
@@ -488,7 +490,30 @@ def deleteImage(request):
 			os.remove(os.path.join(settings.MEDIA_ROOT, profile.profileImg.name))
 			profile.profileImg.delete()
 	profile.save()
-	return HttpResponseRedirect("/userinfo/" + request.user.username)
+	return HttpResponseRedirect("/userinfo/" + request.user.username + "/videos/")
+
+def reduce(func, items):
+	result = items.pop()
+	for item in items:
+		result = func(result, item)
+
+	return result
 
 def songSearch(request):
-	keyword = request.GET["keyword"]
+	template = "search_result.html"
+	args = {}
+
+	keywords = request.GET["keywords"]
+	keyword_list = keywords.split(" ")
+	
+	songs = Song.objects.filter(reduce(operator.or_, [Q(title__contains=keyword) for keyword in keyword_list]) | 
+								reduce(operator.or_, [Q(singer__contains=keyword) for keyword in keyword_list]) |
+								reduce(operator.or_, [Q(content__contains=keyword) for keyword in keyword_list]) |
+								reduce(operator.or_, [Q(videoURL__contains=keyword) for keyword in keyword_list]))
+
+
+	args = {
+		'songs': songs
+	}
+	return render(request, template, args)
+
