@@ -482,7 +482,7 @@ def uploadImage(request):
 		profile.profileImg = request.FILES['imgFile']
 		profile.save()
 	
-	return HttpResponseRedirect("/userinfo/" + request.user.username + "/videos/")
+	return HttpResponseRedirect("/userinfo/" + request.user.username + "/videos")
 
 def deleteImage(request):
 	profile = Profile.objects.get(user=request.user)
@@ -490,7 +490,7 @@ def deleteImage(request):
 			os.remove(os.path.join(settings.MEDIA_ROOT, profile.profileImg.name))
 			profile.profileImg.delete()
 	profile.save()
-	return HttpResponseRedirect("/userinfo/" + request.user.username + "/videos/")
+	return HttpResponseRedirect("/userinfo/" + request.user.username + "/videos")
 
 def reduce(func, items):
 	result = items.pop()
