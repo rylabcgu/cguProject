@@ -40,24 +40,24 @@ def index(request):
 			follows = Follow.objects.filter(follower=user)
 			rfollow = random.choice(follows)
 			user2 = User.objects.get(username=rfollow)
-			song_list2 = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
+			song_list_followee = Song.objects.filter(uploader=user2).order_by('-uploadTime')[:5]
 			args['user2'] = user2
-			args['song_list2'] = song_list2
+			args['song_list_followee'] = song_list_followee
 		else:
-			args['song_list2'] = None
+			args['song_list_followee'] = None
 		
 	
-	song_list0 = Song.objects.all().order_by('-uploadTime')[:5]
-	song_list1 = Song.objects.all().order_by('-viewNumber')[:5]
-	song_list3 = Song.objects.filter(pinyinType=0).order_by('-uploadTime')[:5]
-	song_list4 = Song.objects.filter(pinyinType=1).order_by('-uploadTime')[:5]
-	song_list5 = Song.objects.filter(pinyinType=2).order_by('-uploadTime')[:5]
+	song_list_by_uploadTime = Song.objects.all().order_by('-uploadTime')[:5]
+	song_list_by_viewNumber = Song.objects.all().order_by('-viewNumber')[:5]
+	song_list_by_pinyinType0 = Song.objects.filter(pinyinType=0).order_by('-uploadTime')[:5]
+	song_list_by_pinyinType1 = Song.objects.filter(pinyinType=1).order_by('-uploadTime')[:5]
+	song_list_by_pinyinType2 = Song.objects.filter(pinyinType=2).order_by('-uploadTime')[:5]
 	
-	args['song_list0'] = song_list0
-	args['song_list1'] = song_list1
-	args['song_list3'] = song_list3
-	args['song_list4'] = song_list4
-	args['song_list5'] = song_list5
+	args['song_list_by_uploadTime'] = song_list_by_uploadTime
+	args['song_list_by_viewNumber'] = song_list_by_viewNumber
+	args['song_list_by_pinyinType0'] = song_list_by_pinyinType0
+	args['song_list_by_pinyinType1'] = song_list_by_pinyinType1
+	args['song_list_by_pinyinType2'] = song_list_by_pinyinType2
 
 	return render(request, template, args)
 
@@ -325,7 +325,7 @@ def aftermodify(request):
 		
 		if delete !='0':
 			this_song.delete()
-			return HttpResponseRedirect('/songlist/0/')
+			return HttpResponseRedirect('/songlist/byuploadtime')
 		else:
 			Song.objects.filter(songID=request.POST['SongID']).update(singer=singer, composer=composer, lyricist=lyricist, title=title, videoURL=videoURL, content=content)
 			order = request.POST.getlist('order')
@@ -395,7 +395,7 @@ def userinfo(request, id, view):
 		userinfo.save()
 	
 	favorites = Favorite.objects.filter(user=user2)
-	uploadSongs = Song.objects.filter(uploader=user2)
+	uploadSongs = Song.objects.filter(uploader=user2).order_by("-uploadTime")
 	follows = Follow.objects.filter(follower=user2)
 
 	
@@ -447,15 +447,15 @@ def songlist(request, id):
 	template = 'songlist.html'
 	args = {}
 	
-	if id == "0":
+	if id == "byuploadtime":
 		song_list = Song.objects.all().order_by('-uploadTime')
-	elif id == "1":
+	elif id == "byviewnumber":
 		song_list = Song.objects.all().order_by('-viewNumber')	
-	elif id == "3":
+	elif id == "bypinyin0":
 		song_list = Song.objects.filter(pinyinType=0)
-	elif id == "4":
+	elif id == "bypinyin1":
 		song_list = Song.objects.filter(pinyinType=1)
-	elif id == "5":
+	elif id == "bypinyin2":
 		song_list = Song.objects.filter(pinyinType=2)
 	else:
 		song_list = 87
@@ -469,7 +469,27 @@ def songlist(request, id):
 	except EmptyPage:
 		songs = paginator.page(paginator.num_pages)
 	
+	if (songs.number-3) < 1:
+		theFirstPreviousPage=1
+	else:
+		theFirstPreviousPage=songs.number-3
+		
+	if (songs.number+3) > paginator.num_pages:
+		theLastNextPage=paginator.num_pages
+	else:
+		theLastNextPage=songs.number+4
+	
+	songsRange=[]
+	for i in range(theFirstPreviousPage, theLastNextPage):
+		songsRange.append(i)
+	
+	theFirstPage=1
+	theLastPage=paginator.num_pages
+	
 	args['songs'] = songs
+	args['songsRange'] = songsRange
+	args['theFirstPage'] = theFirstPage
+	args['theLastPage'] = theLastPage
 	
 	return render(request, template, args)
 
