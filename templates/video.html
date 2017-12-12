@@ -20,16 +20,12 @@
 					<button onclick="pauseVideo();">暫停</button>-->
 					<button onclick="replayVideo();">重頭播放</button>	
 					<button id="circulate" onclick="circulate();">單句循環</button>
-					<!--<button id="both_present" onclick="both_present();">正常字幕</button>
-					<button id="pinyin_btn" onclick="pinyin_present();">台羅拼音</button>
-					<button id="text_word" onclick="text_present();">閩南語漢字</button>-->
 					<select id="selectMode" onchange="selectMode()">
 						<option value='1'>一般字幕</option>
 						<option value='2'>台羅拼音</option>
 						<option value='3'>閩南語漢字</option>
 						<option value='4'>全關</option>
 					</select>	
-					<!--<button id="pinyin_present" onclick="pinyin_right();">右邊拼音 on</button>-->
 					<span id="timer" style="background-color:black;color:yellow;"></span><br>
 				</div>
 			</div>
@@ -197,7 +193,7 @@
 						  		if(z) record_Array[i] = 1 + c.length - 1; //輕聲調--,須減掉1個
 						  		else record_Array[i] = 1 + c.length;  //寂-寞 的 心-情 2 1 2
 						  	} 
-						  	else record_Array[i] = 1;
+						  	else record_Array[i] = 1;//只有一個字，非詞 ex: 寂-寞 "的" 心-情
 						  	checksum += record_Array[i];
 						}	
 						//console.log(checksum);
@@ -210,27 +206,26 @@
 									string += text_Array[j];
 								} 
 								tw_Array[i] = string;
-								var k = i+1;
-								document.write("<ruby style='font-size: 180%;'><rb id='text_{{lyric.order}}'>"+tw_Array[i]+"</rb><rt id='pinyin_{{lyric.order}}_"+k+"'>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
+								document.write("<ruby style='font-size: 180%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;");
 							}
 						}
 						else{
 							//不做對齊
 							//console.log(check_num);
-							document.write("<ruby style='font-size: 150%;'><rb id='text_{{lyric.order}}'>"+text+"</rb><rt id='pinyin_{{lyric.order}}'>"+pinyin+"</rt></ruby>&ensp;");
+							document.write("<ruby style='font-size: 150%;'><rb>"+text+"</rb><rt>"+pinyin+"</rt></ruby>&ensp;");
 						}	
-						  document.write("</p></td></tr></table>");
+						  document.write("</p></td>");
+						  document.write("<td><a class='modify_text' style='cursor:pointer; color:#F8F8FF' onclick='modify_Text({{lyric.order}})'>編輯</a></td>");
+						  document.write("</tr></table>");
 						{% endfor %}
 					</script>
 				</div>
 			</div>
+			<div id='modify_area'></div>
+			<div id='test'></div>
 		</div>
 	</div>
 
-
-
-
-	
 	<script type="text/javascript">
 	$.ajaxSetup({
 	  data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
@@ -336,44 +331,6 @@
 			}
 			player.playVideo();	
 		}
-		/*function pinyin_right(){
-			switcher_pinyin_r = switcher_pinyin_r==0?1:0;
-			if(switcher_pinyin_r==0){ 
-				document.getElementById("pinyin_present").style.color = "red";
-				document.getElementById("pinyin_present").innerHTML = "拼音 on";
-				{% for lyric in lyrics %}
-					x = document.getElementById("{{lyric.order}}");
-					var rt_pinyin = x.getElementsByTagName("rt");
-					if(document.getElementById("pinyin_{{lyric.order}}_1")){
-						for(var i=1;i<=rt_pinyin.length;i++){ 
-							var pinyin_id = "pinyin_{{lyric.order}}_"+i;
-							document.getElementById(pinyin_id).style.visibility = "visible";
-						}
-					}							
-					else{
-						document.getElementById("pinyin_{{lyric.order}}").style.visibility = "visible";
-					}
-				{% endfor %}
-			}
-			else{
-				document.getElementById("pinyin_present").style.color = "black";
-				document.getElementById("pinyin_present").innerHTML = "拼音 off";
-				//document.getElementById("cuewrap_pinyin").style.color = "white";
-				{% for lyric in lyrics %}
-					x = document.getElementById("{{lyric.order}}");
-					var rt_pinyin = x.getElementsByTagName("rt");
-					if(document.getElementById("pinyin_{{lyric.order}}_1")){//判斷是否是對齊的rt
-						for(var i=1;i<=rt_pinyin.length;i++){ 
-						var pinyin_id = "pinyin_{{lyric.order}}_"+i;
-						document.getElementById(pinyin_id).style.visibility = "hidden";
-						}
-					}				
-					else{ //rt_pinyin.length<=1 為沒有對齊的ruby
-						document.getElementById("pinyin_{{lyric.order}}").style.visibility = "hidden";
-					}					
-				{% endfor %}
-			}	
-		}*/
 		function subtitle(order){
 			document.getElementById("cuewrap").innerHTML = subTitle[order];
 			document.getElementById("cuewrap_text").innerHTML = textArray[order];
@@ -530,36 +487,11 @@
 	{% endfor %}
 
 	$(document).ready(function() {
-		//判斷此用戶是否按讚過
-		if({{check_user_rating | length}} != 0) switcher_good = 1;
-		else switcher_good=0;
-		//console.log(switcher_good);
-
-		if({{check_user_favorite | length}} != 0) switcher_fav = 1;
-		else switcher_fav=0;
-		$("img.goodgrade").click(function(){
-			var promise1 = switcher_good = switcher_good==0?1:0 ; 
-			var promise2 = document.getElementById("good_place").innerHTML = "<form id='good_form' method='POST' action=''>"+
-							"<input hidden name='goodgrade' id='goodgrade' type='text' value=''>"+
-							"</form>";		
-			var promise3 = $('#goodgrade').val(switcher_good);	
-			$.when(promise1,promise2,promise3).done(function(){
-				$('#good_form').submit();
-			});				
+		$(".modify_text").mouseenter(function(){
+		$(this).css("color","blue");
 		});
-
-		$('.favorite').click(function(){
-			var promise1 = switcher_fav = switcher_fav==0?1:0 ; 
-			var promise2 = document.getElementById("fav_place").innerHTML = "<form id='fav_form' method='POST' action=''>"+
-							"<input hidden name='favorite' id='favorite' type='text' value=''>"+
-							"</form>";		
-			var promise3 = $('#favorite').val(switcher_fav);	
-			$.when(promise1,promise2,promise3).done(function(){
-				$('#fav_form').submit();
-				if(switcher_fav == 1) alert("訂閱成功");
-				else alert("已刪除訂閱");
-
-			});				
+		$(".modify_text").mouseleave(function(){
+			$(this).css("color","#F8F8FF");
 		});
 
 		$('.move').click(function(){
@@ -606,8 +538,122 @@
 			return false;
 		});
 
+		$(document).on('submit','#modify_Text_Form',function(e){
+			e.preventDefault();
+			$.ajax({
+				type: 'POST',
+				url: '/modify_text/{{song.songID}}/',
+				data:{
+					mdf_pinyin: $('#mdf_pinyin').val(),
+					mdf_text: $('#mdf_text').val(),
+					mdf_order: $('#mdf_order').val()
+				},
+				success:function(data,xhr,status){
+					//console.log(data.mdf_pinyin); //修改過的拼音
+					//console.log(data.mdf_text);
+					//console.log(data.mdf_order);
+					var pinyin = data.mdf_pinyin;
+					var text = data.mdf_text;
+					var order = data.mdf_order;
+					var find = '-';
+					var find2 = '--';
+					var pinyin_Array = new Array(); //台羅拼音
+					var text_Array = new Array();   //台語字
+					var record_Array = new Array(); //紀錄"-"數量 -> 讓台語字能夠依照台羅拼音隔開分布位置 2 1 2
+					var translate_Array = new Array(); //2 1 2 -> 0 2 3 5陣列表示
+					var tw_Array = new Array(); //紀錄新的台語字斷詞
+					var check_num = 0; 
+					var temp ="";
+					var tempText = "";
+					translate_Array[0] = 0;
+
+					for(var i=0;i<pinyin.length;i++){
+						var charCode = pinyin.charCodeAt(i);
+						if(charCode == 12288){  //全形空白轉半形
+							charCode = 32;
+						}
+						temp += String.fromCharCode(charCode);
+					}					
+					pinyin = temp;
+					//刪除左右邊的空格
+					pinyin = pinyin.trim();
+					//刪除字串裡多餘空白及-
+					pinyin = pinyin.replace(/\s(?=\s)/gi,"");//g表全局匹配，i表區分大小寫
+					pinyin = pinyin.replace(/---+/g,"--");
+
+					//切割台羅拼音
+					pinyin_Array = pinyin.split(" ");
+					for(var i=0;i<text.length;i++){
+						var charCode = text.charCodeAt(i);
+						 if(charCode < 0x4E00 || charCode > 0x9FA5){ //只顯示中文字,非中文字改半形空白,改NULL字數會減少
+							charCode = 32;
+						}
+						tempText += String.fromCharCode(charCode);
+					}
+					text = tempText;
+					//刪除台語字的所有空格
+					text = text.replace(/\s+/g,"");
+					//切割台語字
+					text_Array = text.split("");
+					var words = pinyin_Array.length;
+					//console.log(words);
+					var checksum = 0;
+					for(var i=0;i<words;i++){
+					  	var reg = new RegExp(find,"g"); //建立了一個正則表達式，計算-數量求出單句自數
+					  	var reg2 = new RegExp(find2,"g");
+					  	var c = pinyin_Array[i].match(reg); //c即要匹配的字符，其中g表示全局搜索。match則返回匹配的字符（串)
+					  	var z = pinyin_Array[i].match(reg2);
+					  	if(c){
+					  		if(z) record_Array[i] = 1 + c.length - 1; //輕聲調--,須減掉1個
+					  		else record_Array[i] = 1 + c.length;  //寂-寞 的 心-情 2 1 2
+					  	} 
+					  	else record_Array[i] = 1;//只有一個字，非詞 ex: 寂-寞 "的" 心-情
+					  	checksum += record_Array[i];
+					}
+					var ruby_string="";	//裝載一句中每一個ruby的字詞		
+					if( checksum == text_Array.length){ //檢查拼音和台語字數量是否一致，不一樣則不對齊
+						for(var i=0;i<words;i++){
+							translate_Array[i+1] = translate_Array[i] + record_Array[i];
+							var string="";
+							for(var j=translate_Array[i];j<translate_Array[i+1];j++){
+								string += text_Array[j];
+							} 
+							tw_Array[i] = string;
+							ruby_string +=  "<ruby style='font-size: 180%;'><rb>"+tw_Array[i]+"</rb><rt>"+pinyin_Array[i]+"</rt></ruby>&ensp;";
+						}
+					}
+					else{
+						ruby_string = "<ruby style='font-size: 150%;'><rb>"+text+"</rb><rt>"+pinyin+"</rt></ruby>&ensp;";
+					}
+					document.getElementById(order).innerHTML = ruby_string;
+					document.getElementById("modify_area").style.display = "none";//關閉form	
+					ruby_string="";
+				},
+				error:function(){
+					//console.log("error");
+					alert("必須是這首歌的創作者才能編輯喔!");
+				},
+			});
+			return false;
+		});
+
 	});
 
+	function modify_Text(getID){
+		//console.log(getID);
+		document.getElementById("modify_area").style.display = "block";
+		document.getElementById("modify_area").innerHTML = "<form id='modify_Text_Form'>"+
+							"<input id='mdf_pinyin' size='40' type='text' value='"+pinyinArray[getID]+"'>"+
+							"<input id='mdf_text' size='40' type='text' value='"+textArray[getID]+"'>"+
+							"<input hidden id='mdf_order' size='40' value='"+getID+"'>"+
+							"<input type='submit' value='送出'>"+
+							"<input type='button' onclick='cancel_modify()' value='取消'>"+
+							"</form>";
+								
+	}
+	function cancel_modify(){
+		document.getElementById("modify_area").style.display = "none";	
+	}
 	function favorite()
 	{
 		var fav_btn = document.getElementById("fav-btn");

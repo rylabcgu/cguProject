@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^follow/(\w+)/$', follow),
     url(r'^favorite/(\w+)/$', favorite),
     url(r'^comment/(\w+)/$', comment),
+    url(r'^modify_text/(\w+)/$', modify_text),
     url(r'^modify/$', modify),
     url(r'^aftermodify/$',aftermodify),
     url(r'^autoAL/$', autoAL, name='autoAL'),

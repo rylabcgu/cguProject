@@ -254,6 +254,29 @@ def comment(request, id):
 
 	return HttpResponse(comment)
 
+def modify_text(request,id):
+	song = Song.objects.get(songID=id)
+	args = {}
+	if request.user.is_authenticated():			
+		if song.uploader==User.objects.get(username=request.user.username):
+			if request.method =='POST':
+				mdf_pinyin = request.POST['mdf_pinyin']
+				mdf_text = request.POST['mdf_text']
+				mdf_order = request.POST['mdf_order']
+				Lyric.objects.filter(song=song,order=mdf_order).update(text=mdf_text,pinyin=mdf_pinyin)
+				Data = {
+					'mdf_pinyin': mdf_pinyin,
+					'mdf_text': mdf_text,
+					'mdf_order': mdf_order
+				}
+				modify_text = "編輯成功!"
+			else:
+				modify_text = "編輯失敗QQ"
+		else:
+			return false
+	else:
+		return false
+	return JsonResponse(Data)
 
 def like(request, id):
 	username = request.user.username
