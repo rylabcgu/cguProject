@@ -78,3 +78,10 @@ class Hashtag(models.Model):
 
 	def __str__(self):
 		return str(self.tagName)
+
+class Phrase(models.Model):
+	taiwanese = models.CharField(max_length=10, blank=True)
+	phonetic = models.CharField(max_length=50, blank=True)
+
+	def __str__(self):
+		return str(self.taiwanese)

@@ -33,3 +33,7 @@ admin.site.register(Rating, RatingAdmin)
 class HashtagAdmin(admin.ModelAdmin):
 	list_display = ('tagName','song')
 admin.site.register(Hashtag, HashtagAdmin)
+
+class PhraseAdmin(admin.ModelAdmin):
+	list_display = ('taiwanese','phonetic')
+admin.site.register(Phrase, PhraseAdmin)
