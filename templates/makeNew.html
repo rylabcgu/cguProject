@@ -20,7 +20,7 @@
 			<div class="col-md-10 offset-md-1" style="text-align: center;">
 				<div id="player"></div>
 				<div id="lyricsDiv" style="margin:5px 0px 5px 0px; padding: 20px 0px 5px 0px; overflow: scroll; height: 550px;">
-				<form method="post" action=".">
+				<form id ="makeNew" method="post" action=".">
 					{% csrf_token %}
 					<div id="form-main"></div>
 				</form>
@@ -937,7 +937,7 @@
 				}}
 			tagList = tagList.replace(/\s/g,'');
 			document.getElementById("tags").value = tagList;
-			var form = document.getElementsByTagName("form")[0];
+			var form = document.getElementById("makeNew");
 			console.log(form)
 			form.submit();
 		}
