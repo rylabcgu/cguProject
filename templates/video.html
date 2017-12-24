@@ -515,10 +515,15 @@
 				success:function(data,xhr,status){
 					//console.log(data); data為評論內容
 					//取得使用者頭貼在前端加入一筆短暫留言，之後刷新頁面再交給資料庫取出
-					{% for l in profileImg %}
+					{% for i in show_comments %}
 						document.getElementById("ajax_post").innerHTML = 
 						"<div>"+
-							"<img src='/media/{{l.profileImg}}'style='width:36px; height: 36px'>"+
+								{% if comment_profile_imgs|get_item:i.user.username %}
+									"<img src='/media/{{ comment_profile_imgs | get_item:i.user.username }}' style='width:36px; height: 36px'>"+
+								{% else %}
+									"<img src='{% static 'images/皮卡丘.jpg'%}' style='width:36px; height: 36px'>"+
+								{% endif %}
+							//<img src='/media/{{l.profileImg}}'style='width:36px; height: 36px'>"+
 							"<strong><a href='/userinfo/{{ user }}'>{{ user | capfirst }}</a></strong>"+
 						"</div>"+
 						"<div style='padding: 0 40px 0 40px;'>"+data+"</div>"+
