@@ -7,7 +7,7 @@
 	<div class="col-md-10 offset-md-1">
 		<div class="my-block">
 			<span style="font-size:30px;">基本資料</span>
-			<form action="/userinfo/{{ user.username }}/" method="POST">
+			<form action="/userinfo/{{ user.username }}/videos" method="POST">
 				{% csrf_token %}
 				<label for="nickname">暱稱: </label>
 				<input type="text" name="nickname" value="{{ userinfo.nickname }}"><br>
