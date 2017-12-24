@@ -174,7 +174,7 @@ def video(request, id):
 	comment_profile_srch_list = []
 	comment_profile_imgs = {}
 	for comment in this_song_comments:
-		if comment.user not in profile_srch_list:
+		if comment.user not in comment_profile_srch_list:
 			comment_profile_srch_list.append(comment.user)
 	profiles = Profile.objects.filter(user__in=comment_profile_srch_list)
 	for profile in profiles:

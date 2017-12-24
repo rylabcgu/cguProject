@@ -113,8 +113,8 @@
 					{% for i in show_comments %}
 						<div class="comment_item">
 							<div>
-								{% if profile_imgs|get_item:i.user.username %}
-									<img src="/media/{{ profile_imgs | get_item:i.user.username }}" style="width:36px; height: 36px">
+								{% if comment_profile_imgs|get_item:i.user.username %}
+									<img src="/media/{{ comment_profile_imgs | get_item:i.user.username }}" style="width:36px; height: 36px">
 								{% else %}
 									<img src="{% static 'images/皮卡丘.jpg'%}" style="width:36px; height: 36px">
 								{% endif %}
