@@ -169,7 +169,9 @@ def video(request, id):
 	Song.objects.filter(songID=id).update(viewNumber=viewNumbers)
 	modify = False 
 	this_song_comments = Comment.objects.filter(song=song)
-
+	#get hashtag
+	args['hashtags'] = Hashtag.objects.filter(song=song)
+	
 	# get all comment users' profile image 
 	comment_profile_srch_list = []
 	comment_profile_imgs = {}

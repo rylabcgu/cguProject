@@ -37,6 +37,10 @@
 				</div>
 				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
+				<!--hashtag-->
+					{% for i in hashtags %}
+						<a href="/search/?keywords={{i.tagName}}">{{i.tagName}}</a>
+					{% endfor %}
 				<hr style="background-color: #0275D8">
 				<div><!--訂閱 -->
 					{% if isFavorite %}
