@@ -331,7 +331,7 @@ def modify(request):
 		song = Song.objects.get(songID=request.GET['id'])
 		args['song'] = song
 		args['lyrics'] = Lyric.objects.filter(song=song)
-		args['hashtag'] = Hashtag.objects.filter(song=song)
+		args['hashtags'] = Hashtag.objects.filter(song=song)
 		return render(request, template, args)
 
 def aftermodify(request):
@@ -366,6 +366,8 @@ def aftermodify(request):
 				l = Lyric.objects.create(song=this_song, start_time=float(sTime[i]), end_time=float(eTime[i]), text=lyricsText[i], pinyin=ALText[i], order=order[i])
 				l.save()
 
+			deleteH = Hashtag.objects.filter(song=this_song)
+			deleteH.delete()
 			tags = tags.split('#');
 			tagslength = len(tags);
 			for i in range(tagslength):

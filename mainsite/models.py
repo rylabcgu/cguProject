@@ -15,7 +15,7 @@ class Profile(models.Model):
 class Song(models.Model):
 	songID = models.AutoField(primary_key=True)	#主鍵
 	uploader = models.ForeignKey(User)	#外鍵
-	singer = models.CharField(max_length=20)
+	singer = models.CharField(max_length=20, blank=True)
 	composer = models.CharField(max_length=10, blank=True)
 	lyricist = models.CharField(max_length=10, blank=True)
 	title = models.CharField(max_length=20)

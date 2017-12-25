@@ -297,7 +297,9 @@
 
         		}
         	}
-        	
+
+        	if(content == '')
+                content='沒有歌曲資訊，點兩下進行修改';
         	var change = document.createElement("p");
         	change.id = "SongContentP";
         	change.name = "SongContentP";

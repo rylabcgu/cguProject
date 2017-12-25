@@ -31,8 +31,8 @@
                                 </div>
                             {% endfor %}
                         <br>歌曲說明:<br>
-                        <textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag()'>{{song.content}}</textarea><br>
-                        <input type='hidden' name='tags' id='tags' value=0>
+                        <textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag(0)'>{{song.content}}</textarea><br>
+                        <input type='hidden' name='tags' id='tags' value=''>
                     </div>
                         
                     </form>
@@ -108,27 +108,30 @@
                 }
         }
 
-        function showTag(){
+        function showTag(submit){
             var songcontent = document.getElementById("SongContentI");
             var content=songcontent.value;
             pattern = /\s#[a-zA-Z0-9\u4e00-\u9fa5]*\s/g;
             var res=content.match(pattern);
-            console.log(res)
             if(res){
                 for(var i=0; i<res.length;i++){
-                    console.log(res[i])
                     var tag='<span class="clickable-words" name="tag">'+res[i]+'</span>';
-                    console.log(tag)
                     content = content.replace(res[i], tag);
-                    console.log(content)
-
                 }
             }
-            
+            if(submit == 1){
+                if(document.getElementById("SongContentP"))
+                document.getElementById("SongContentP").remove();
+            }
+
+            if(content == '')
+                content='沒有歌曲資訊，點兩下進行修改';
+            content = content.replace(/\n/g,"<br />");
             var change = document.createElement("p");
             change.id = "SongContentP";
             change.name = "SongContentP";
             change.innerHTML = content;
+            
             songcontent.parentElement.appendChild(change);
             document.getElementById("SongContentI").setAttribute("style", "display:none;");
             document.getElementById("SongContentP").setAttribute("ondblclick", " modifyTag()");
@@ -577,7 +580,7 @@
 
         function submit(check){
             if(check==0){
-                var form = document.getElementsByTagName("form")[0];
+                var form = document.getElementById("makeNew");
                 form.submit();
             }
             else{
@@ -586,7 +589,7 @@
                     return;
                 }
                 else{
-                    showTag();
+                    showTag(1);
                     var tag = document.getElementsByName("tag");
                     var tagList = '0';
                     if(tag){
