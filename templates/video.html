@@ -35,11 +35,41 @@
 					<div class="my-inline" style="font-size:24px; width: 49%">{{ song.singer }} - {{ song.title }}</div>
 					<div class="my-inline" style="text-align: right; width: 50%; color: grey;">{{ song.viewNumber }}次觀看</div>
 				</div>
-				<span>上傳者: <a href="/userinfo/{{ song.uploader }}">{{ song.uploader }}</a></span>
+				<span>上傳者: <a href="/userinfo/{{ song.uploader }}/videos">{{ song.uploader }}</a></span>
 				<div style="color: grey; font-size: 14px;">{{ song.uploadTime }}</div>
+				<br />
+				<div>
+					<span><b style="font-size: 20px">歌曲說明</b></span>
+					<p id="tag">=</p>
+				</div>				
+					<input type='hidden' id='song_content' value='{{song.content}}'>
+					<script>
+						var content = document.getElementById('song_content').value;
+						//console.log(content)
+						pattern = /\s#[a-zA-Z0-9\u4e00-\u9fa5]*\s/g;
+						var res=content.match(pattern);
+						//console.log(res)
+						if(res){
+							for(var i=0; i<res.length;i++){
+								//console.log(res[i])
+								var target = res[i].slice(2);
+								console.log(target);
+								var tag="<span class='clickable-words' name='tag'><a href='/search/?keywords=%23"+target+"'>"+res[i]+"</a></span>";
+								content = content.replace(res[i], tag);
+								
+								//console.log(content)
+							}
+						}
+						content = content.replace(/\n/g, "<br />");
+						//console.log(content)
+						document.getElementById('tag').innerHTML = content;
+					</script>
+					
+
+					
 				<!--hashtag-->
 					{% for i in hashtags %}
-						<a href="/search/?keywords={{i.tagName}}">{{i.tagName}}</a>
+						<!--<a href="/search/?keywords={{i.tagName}}">#{{i.tagName}}</a>-->
 					{% endfor %}
 				<hr style="background-color: #0275D8">
 				<div><!--訂閱 -->

@@ -549,7 +549,6 @@ def reduce(func, items):
 def songSearch(request):
 	template = "search_result.html"
 	args = {}
-
 	keywords = request.GET["keywords"]
 	keyword_list = keywords.split(" ")
 	
@@ -557,10 +556,9 @@ def songSearch(request):
 								reduce(operator.or_, [Q(singer__contains=keyword) for keyword in keyword_list]) |
 								reduce(operator.or_, [Q(content__contains=keyword) for keyword in keyword_list]) |
 								reduce(operator.or_, [Q(videoURL__contains=keyword) for keyword in keyword_list]))
-
-
 	args = {
-		'songs': songs
+		'songs': songs,
+		'keywords': keywords,
 	}
 	return render(request, template, args)
 

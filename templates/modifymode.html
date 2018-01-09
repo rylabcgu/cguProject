@@ -31,7 +31,7 @@
                                 </div>
                             {% endfor %}
                         <br>歌曲說明:<br>
-                        <textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag(0)'>{{song.content}}</textarea><br>
+                        <textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag(0)' placeholder='可以輸入井字號進行tag(例如: #正字 )'>{{song.content}}</textarea><br>
                         <input type='hidden' name='tags' id='tags' value=''>
                     </div>
                         
@@ -109,6 +109,8 @@
         }
 
         function showTag(submit){
+            var tmp={{song.content}};
+            console.log(tmp)
             var songcontent = document.getElementById("SongContentI");
             var content=songcontent.value;
             pattern = /\s#[a-zA-Z0-9\u4e00-\u9fa5]*\s/g;
@@ -125,7 +127,7 @@
             }
 
             if(content == '')
-                content='沒有歌曲資訊，點兩下進行修改';
+                content='沒有歌曲資訊，點兩下進行新增';
             content = content.replace(/\n/g,"<br />");
             var change = document.createElement("p");
             change.id = "SongContentP";

@@ -5,6 +5,7 @@
 {% block content %} 
 	<div class="row">
 		<div class="col-md-12 my-block" style="padding: 1em 2em">
+			<h1>{{keywords}}</h1>
 			{% for song in songs %}
 				<a href="/video/{{ song.songID }}"><div style="margin: 1em 1em">
 					<div style="display: inline-block; padding-right: 1em"><img src="http://img.youtube.com/vi/{{ song.videoURL }}/0.jpg" style="width: 16em; height: 9em"></div>

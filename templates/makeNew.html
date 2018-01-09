@@ -238,7 +238,7 @@
 
 			
 			var form_main = document.getElementById("form-main");
-			content+="<br>歌曲說明:<br><textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag()'></textarea><br>";
+			content+="<br>歌曲說明:<br><textarea id='SongContentI' name='SongContentI' rows='8' cols='80%' onblur='showTag()' placeholder='可以輸入井字號進行tag(例如: #正字 )'></textarea><br>";
 			content+="<input type='hidden' name='tags' id='tags' value=0>";
 			/*content+="<br>歌曲說明:<br><textarea class='my-textarea' id='SongContent' name='SongContent' rows='8' cols='80%' onkeyup='textareakeyup()' onblur='useTag()'></textarea><br>";*/
 			form_main.innerHTML = content;
@@ -299,7 +299,7 @@
         	}
 
         	if(content == '')
-                content='沒有歌曲資訊，點兩下進行修改';
+                content='沒有歌曲資訊，點兩下進行新增';
             content = content.replace(/\n/g,"<br />");
         	var change = document.createElement("p");
         	change.id = "SongContentP";
